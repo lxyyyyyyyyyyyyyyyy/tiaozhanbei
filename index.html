@@ -1,0 +1,870 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>总部权限管理平台</title>
+  <style>
+    :root {
+      --bg: #f3f6fb;
+      --surface: #ffffff;
+      --text: #1f2a37;
+      --muted: #66768a;
+      --primary: #0d6efd;
+      --border: #dce5f1;
+      --danger: #d63649;
+      --ok: #129968;
+      --warn: #c18408;
+      --shadow: 0 10px 26px rgba(34, 52, 84, 0.08);
+      --r: 12px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: linear-gradient(180deg, #ecf3ff 0, #f3f6fb 180px);
+      color: var(--text);
+      font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+    }
+
+    .layout {
+      width: min(1280px, 96vw);
+      margin: 18px auto;
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 14px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+    }
+
+    .panel { padding: 14px; }
+
+    h1, h2, h3, p { margin: 0; }
+
+    .logo {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .logo b {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #0d6efd, #4ea1ff);
+      color: #fff;
+    }
+
+    .muted { color: var(--muted); font-size: 13px; }
+
+    select, input, textarea, button {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 14px;
+      font-family: inherit;
+      background: #fff;
+    }
+
+    button {
+      cursor: pointer;
+      background: #f4f8ff;
+      color: #2556a5;
+      transition: .2s;
+    }
+
+    button.primary {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    button.danger {
+      background: var(--danger);
+      color: #fff;
+      border-color: var(--danger);
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: .45;
+    }
+
+    .row { display: flex; gap: 8px; align-items: center; }
+    .row.wrap { flex-wrap: wrap; }
+
+    .menu-group { margin-top: 12px; }
+
+    .menu-title {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 8px;
+      letter-spacing: .4px;
+    }
+
+    .menu-btn {
+      text-align: left;
+      margin-bottom: 6px;
+      background: #f8fbff;
+    }
+
+    .menu-btn.active {
+      background: #dfeeff;
+      border-color: #b6d3ff;
+      color: #124a96;
+      font-weight: 700;
+    }
+
+    .main-head {
+      padding: 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      display: inline-block;
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #eef4ff;
+      color: #315a94;
+      margin-right: 6px;
+      margin-bottom: 6px;
+    }
+
+    .content { padding: 14px; display: grid; gap: 14px; }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .kpi { padding: 12px; border: 1px solid var(--border); border-radius: 10px; }
+    .kpi b { font-size: 26px; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th, td {
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      padding: 9px 6px;
+      vertical-align: top;
+    }
+
+    .table-wrap { overflow: auto; }
+
+    .ops { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    .tag {
+      font-size: 12px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      color: #1f4f90;
+      background: #eaf2ff;
+    }
+
+    .tag.ok { color: #126f4d; background: #e4f7ef; }
+    .tag.warn { color: #875f0d; background: #fff3da; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; }
+      .kpi-grid, .grid-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="card panel">
+      <div class="logo"><b>HQ</b><div><h3>总部权限平台</h3><div class="muted">四级角色三层控制</div></div></div>
+
+      <div>
+        <div class="muted" style="margin-bottom:6px;">登录账号</div>
+        <select id="accountSelect"></select>
+        <button class="primary" id="switchAccount" style="margin-top:8px;">登录 / 切换</button>
+      </div>
+
+      <div style="margin-top:10px;" class="card panel">
+        <div class="muted">当前身份</div>
+        <div id="whoami" style="margin-top:6px;font-size:14px;"></div>
+      </div>
+
+      <div class="menu-group">
+        <div class="menu-title">一级菜单</div>
+        <div id="menuLevel1"></div>
+      </div>
+
+      <div class="menu-group">
+        <div class="menu-title">二级菜单</div>
+        <div id="menuLevel2"></div>
+      </div>
+    </aside>
+
+    <section class="card">
+      <div class="main-head">
+        <div>
+          <h2 id="pageTitle">总览</h2>
+          <div class="muted" id="pageDesc">基于角色展示菜单、按钮和数据范围</div>
+        </div>
+        <div>
+          <span class="pill" id="pillLevel"></span>
+          <span class="pill" id="pillDataScope"></span>
+          <span class="pill" id="pillOps"></span>
+        </div>
+      </div>
+      <div class="content" id="mainContent"></div>
+    </section>
+  </div>
+
+  <script>
+    const STORAGE = {
+      roles: "hq_roles_v2",
+      accounts: "hq_accounts_v2",
+      data: "hq_data_v2"
+    };
+
+    const MENUS = [
+      { id: "overview", name: "运营总览", parent: null },
+      { id: "incubation", name: "孵化管理", parent: null },
+      { id: "quality", name: "品控溯源管理", parent: null },
+      { id: "live", name: "直播管理", parent: null },
+      { id: "marketing", name: "营销管理", parent: null },
+      { id: "finance", name: "财务管理", parent: null },
+      { id: "settings", name: "系统设置", parent: null },
+
+      { id: "inc_progress", name: "孵化进度", parent: "incubation" },
+      { id: "inc_ai", name: "AI孵化方案", parent: "incubation" },
+      { id: "quality_standard", name: "标准制定", parent: "quality" },
+      { id: "quality_sampling", name: "抽检审核", parent: "quality" },
+      { id: "quality_report", name: "品控报告", parent: "quality" },
+      { id: "live_apply", name: "直播申请", parent: "live" },
+      { id: "marketing_campaign", name: "营销活动", parent: "marketing" },
+      { id: "finance_fee", name: "费用明细", parent: "finance" },
+      { id: "settings_users", name: "用户管理", parent: "settings" }
+    ];
+
+    const defaultRoles = [
+      {
+        id: "super_admin",
+        name: "总部超级管理员",
+        level: 1,
+        dept: "ALL",
+        menuIds: MENUS.map((m) => m.id),
+        actions: ["view", "edit", "delete", "audit", "config", "submit"],
+        dataScope: "all"
+      },
+      {
+        id: "dept_incubation",
+        name: "总部部门管理员-孵化",
+        level: 2,
+        dept: "incubation",
+        menuIds: ["overview", "incubation", "inc_progress", "inc_ai"],
+        actions: ["view", "edit", "audit"],
+        dataScope: "dept_related"
+      },
+      {
+        id: "dept_quality",
+        name: "总部部门管理员-品控",
+        level: 2,
+        dept: "quality",
+        menuIds: ["overview", "quality", "quality_standard", "quality_sampling", "quality_report"],
+        actions: ["view", "edit", "audit"],
+        dataScope: "dept_related"
+      },
+      {
+        id: "dept_live",
+        name: "总部部门管理员-直播",
+        level: 2,
+        dept: "live",
+        menuIds: ["overview", "live", "live_apply"],
+        actions: ["view", "edit", "audit"],
+        dataScope: "dept_related"
+      },
+      {
+        id: "dept_marketing",
+        name: "总部部门管理员-营销",
+        level: 2,
+        dept: "marketing",
+        menuIds: ["overview", "marketing", "marketing_campaign"],
+        actions: ["view", "edit", "audit"],
+        dataScope: "dept_related"
+      },
+      {
+        id: "dept_finance",
+        name: "总部部门管理员-财务",
+        level: 2,
+        dept: "finance",
+        menuIds: ["overview", "finance", "finance_fee"],
+        actions: ["view", "edit", "audit"],
+        dataScope: "dept_related"
+      },
+      {
+        id: "qc_expert",
+        name: "品控标准化委员会专家",
+        level: 3,
+        dept: "quality",
+        menuIds: ["quality", "quality_standard", "quality_sampling", "quality_report"],
+        actions: ["view", "edit", "audit"],
+        dataScope: "quality_global"
+      },
+      {
+        id: "farm_owner",
+        name: "入孵农场主",
+        level: 4,
+        dept: "farm",
+        menuIds: ["incubation", "inc_progress", "quality", "quality_report", "finance", "finance_fee", "live", "live_apply"],
+        actions: ["view", "submit"],
+        dataScope: "farm_self"
+      }
+    ];
+
+    const defaultAccounts = [
+      { id: "u001", username: "admin", displayName: "总部负责人", roleId: "super_admin", farmId: "" },
+      { id: "u002", username: "inc_mgr", displayName: "孵化部门管理员", roleId: "dept_incubation", farmId: "" },
+      { id: "u003", username: "qc_mgr", displayName: "品控部门管理员", roleId: "dept_quality", farmId: "" },
+      { id: "u004", username: "live_mgr", displayName: "直播部门管理员", roleId: "dept_live", farmId: "" },
+      { id: "u005", username: "finance_mgr", displayName: "财务部门管理员", roleId: "dept_finance", farmId: "" },
+      { id: "u006", username: "qc_expert", displayName: "品控委员会专家", roleId: "qc_expert", farmId: "" },
+      { id: "u007", username: "farm_a", displayName: "东山农场主", roleId: "farm_owner", farmId: "F001" },
+      { id: "u008", username: "farm_b", displayName: "南岭农场主", roleId: "farm_owner", farmId: "F002" }
+    ];
+
+    const defaultData = {
+      farms: [
+        { farmId: "F001", farmName: "东山农场", owner: "赵农" },
+        { farmId: "F002", farmName: "南岭农场", owner: "钱农" },
+        { farmId: "F003", farmName: "北湖农场", owner: "孙农" }
+      ],
+      incubation: [
+        { farmId: "F001", stage: "育苗", progress: "72%", aiPlan: "待复核", owner: "赵农" },
+        { farmId: "F002", stage: "生长", progress: "58%", aiPlan: "已通过", owner: "钱农" },
+        { farmId: "F003", stage: "采收", progress: "87%", aiPlan: "待复核", owner: "孙农" }
+      ],
+      quality: [
+        { farmId: "F001", batch: "Q-2301", sampleResult: "合格", status: "待审核", score: 91 },
+        { farmId: "F002", batch: "Q-2302", sampleResult: "复检", status: "已驳回", score: 79 },
+        { farmId: "F003", batch: "Q-2303", sampleResult: "合格", status: "已通过", score: 95 }
+      ],
+      finance: [
+        { farmId: "F001", month: "2026-02", fee: 6800, status: "待确认" },
+        { farmId: "F002", month: "2026-02", fee: 7200, status: "已确认" },
+        { farmId: "F003", month: "2026-02", fee: 6400, status: "待确认" }
+      ],
+      liveApply: [
+        { id: "L001", farmId: "F001", theme: "草莓采摘", status: "待审核" },
+        { id: "L002", farmId: "F003", theme: "温室巡检", status: "已通过" }
+      ],
+      facilityApply: [
+        { id: "R001", farmId: "F001", facility: "冷链库", status: "待审核" },
+        { id: "R002", farmId: "F002", facility: "质检实验室", status: "已通过" }
+      ],
+      qualityStandards: [
+        { id: "S001", name: "草莓糖度标准", version: "v2.0", owner: "委员会" },
+        { id: "S002", name: "包装追溯标准", version: "v1.5", owner: "委员会" }
+      ]
+    };
+
+    function load(key, fallback) {
+      const raw = localStorage.getItem(key);
+      if (!raw) return JSON.parse(JSON.stringify(fallback));
+      try { return JSON.parse(raw); } catch { return JSON.parse(JSON.stringify(fallback)); }
+    }
+
+    function save(key, val) {
+      localStorage.setItem(key, JSON.stringify(val));
+    }
+
+    let roles = load(STORAGE.roles, defaultRoles);
+    let accounts = load(STORAGE.accounts, defaultAccounts);
+    let db = load(STORAGE.data, defaultData);
+
+    let currentAccount = accounts[0];
+    let currentMenu = "overview";
+
+    const el = {
+      accountSelect: document.getElementById("accountSelect"),
+      switchAccount: document.getElementById("switchAccount"),
+      whoami: document.getElementById("whoami"),
+      menuL1: document.getElementById("menuLevel1"),
+      menuL2: document.getElementById("menuLevel2"),
+      pageTitle: document.getElementById("pageTitle"),
+      pageDesc: document.getElementById("pageDesc"),
+      pillLevel: document.getElementById("pillLevel"),
+      pillDataScope: document.getElementById("pillDataScope"),
+      pillOps: document.getElementById("pillOps"),
+      main: document.getElementById("mainContent")
+    };
+
+    function getRole(roleId) {
+      return roles.find((r) => r.id === roleId) || roles[0];
+    }
+
+    function accountRole() {
+      return getRole(currentAccount.roleId);
+    }
+
+    function mergedMenuIds(account, role) {
+      const extra = Array.isArray(account.customMenuIds) ? account.customMenuIds : [];
+      return Array.from(new Set([...(role.menuIds || []), ...extra]));
+    }
+
+    function can(action) {
+      return accountRole().actions.includes(action);
+    }
+
+    function canViewMenu(menuId) {
+      return mergedMenuIds(currentAccount, accountRole()).includes(menuId);
+    }
+
+    function dataAllowed(record) {
+      const role = accountRole();
+      if (role.dataScope === "all") return true;
+      if (role.dataScope === "dept_related") return true;
+      if (role.dataScope === "quality_global") return record.module === "quality";
+      if (role.dataScope === "farm_self") return record.farmId === currentAccount.farmId;
+      return false;
+    }
+
+    function actionBtn(label, action, cls, datasetText) {
+      const disabled = !can(action) ? "disabled" : "";
+      return `<button ${disabled} class="${cls || ""}" data-op="${datasetText || ""}">${label}</button>`;
+    }
+
+    function renderAccountOptions() {
+      el.accountSelect.innerHTML = accounts
+        .map((a) => `<option value="${a.id}">${a.displayName} (${a.username})</option>`)
+        .join("");
+      el.accountSelect.value = currentAccount.id;
+    }
+
+    function renderIdentity() {
+      const role = accountRole();
+      el.whoami.innerHTML = `
+        <b>${currentAccount.displayName}</b><br>
+        <span class="muted">角色：${role.name}</span><br>
+        <span class="muted">账号：${currentAccount.username}${currentAccount.farmId ? ` | 农场：${currentAccount.farmId}` : ""}</span>
+      `;
+
+      el.pillLevel.textContent = `权限等级 ${role.level}`;
+      el.pillDataScope.textContent = `数据权限：${role.dataScope}`;
+      el.pillOps.textContent = `操作权限：${role.actions.join("/")}`;
+    }
+
+    function renderMenus() {
+      const level1 = MENUS.filter((m) => !m.parent && canViewMenu(m.id));
+      const activeL1 = MENUS.find((m) => m.id === currentMenu)?.parent || currentMenu;
+      el.menuL1.innerHTML = level1
+        .map((m) => `<button class="menu-btn ${activeL1 === m.id ? "active" : ""}" data-menu="${m.id}">${m.name}</button>`)
+        .join("") || "<div class='muted'>无可见菜单</div>";
+
+      const level2 = MENUS.filter((m) => m.parent === activeL1 && canViewMenu(m.id));
+      el.menuL2.innerHTML = level2
+        .map((m) => `<button class="menu-btn ${currentMenu === m.id ? "active" : ""}" data-menu="${m.id}">${m.name}</button>`)
+        .join("") || "<div class='muted'>该一级菜单无可见二级菜单</div>";
+    }
+
+    function kpiBlock() {
+      const iData = db.incubation.filter((x) => dataAllowed({ module: "incubation", farmId: x.farmId }));
+      const qData = db.quality.filter((x) => dataAllowed({ module: "quality", farmId: x.farmId }));
+      const fData = db.finance.filter((x) => dataAllowed({ module: "finance", farmId: x.farmId }));
+      return `
+        <div class="card panel">
+          <h3>数据看板</h3>
+          <div class="kpi-grid" style="margin-top:8px;">
+            <div class="kpi"><div class="muted">可见农场</div><b>${new Set(iData.map((x) => x.farmId)).size}</b></div>
+            <div class="kpi"><div class="muted">孵化记录</div><b>${iData.length}</b></div>
+            <div class="kpi"><div class="muted">品控记录</div><b>${qData.length}</b></div>
+            <div class="kpi"><div class="muted">费用记录</div><b>${fData.length}</b></div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderOverview() {
+      const role = accountRole();
+      el.pageTitle.textContent = "运营总览";
+      el.pageDesc.textContent = "菜单权限 + 操作权限 + 数据权限实时生效";
+      const hints = [
+        "菜单权限：仅显示当前角色可见菜单",
+        "操作权限：按钮按 view/edit/delete/audit/config/submit 开关",
+        "数据权限：全域、部门相关、品控全域、自身农场"
+      ];
+      el.main.innerHTML = `${kpiBlock()}<div class="card panel"><h3>当前规则</h3><div style="margin-top:8px;">${hints.map((x) => `<span class="pill">${x}</span>`).join("")}</div><p class="muted" style="margin-top:10px;">当前角色：${role.name}</p></div>`;
+    }
+
+    function renderIncubation() {
+      el.pageTitle.textContent = "孵化管理";
+      el.pageDesc.textContent = "含孵化进度、AI孵化方案复核";
+      const rows = db.incubation.filter((x) => dataAllowed({ module: "incubation", farmId: x.farmId }));
+      const facilityRows = db.facilityApply.filter((x) => dataAllowed({ module: "incubation", farmId: x.farmId }));
+      const allowSubmit = can("submit");
+      el.main.innerHTML = `
+        ${kpiBlock()}
+        <div class="card panel table-wrap">
+          <div class="row wrap" style="justify-content:space-between;margin-bottom:8px;">
+            <h3>孵化进度</h3>
+            <div class="ops">
+              ${actionBtn("新增记录", "edit", "")}
+              ${actionBtn("批量审核", "audit", "")}
+              ${actionBtn("删除选中", "delete", "danger")}
+            </div>
+          </div>
+          <table>
+            <thead><tr><th>农场</th><th>阶段</th><th>进度</th><th>AI方案</th><th>操作</th></tr></thead>
+            <tbody>
+              ${rows.map((r) => `<tr><td>${r.farmId}</td><td>${r.stage}</td><td>${r.progress}</td><td>${r.aiPlan}</td><td class="ops">${actionBtn("查看", "view", "")}${actionBtn("编辑", "edit", "")}${actionBtn("复核", "audit", "")}</td></tr>`).join("") || `<tr><td colspan='5' class='muted'>无可见数据</td></tr>`}
+            </tbody>
+          </table>
+        </div>
+        <div class="grid-2">
+          <div class="card panel">
+            <h3>设施预约申请</h3>
+            <div class="row" style="margin-top:8px;">
+              <input id="facilityName" placeholder="设施名称（如 冷链库）" ${allowSubmit ? "" : "disabled"} />
+              <button class="primary" id="submitFacility" ${allowSubmit ? "" : "disabled"}>提交预约</button>
+            </div>
+            <div class="table-wrap" style="margin-top:8px;">
+              <table>
+                <thead><tr><th>单号</th><th>农场</th><th>设施</th><th>状态</th></tr></thead>
+                <tbody>
+                  ${facilityRows.map((r) => `<tr><td>${r.id}</td><td>${r.farmId}</td><td>${r.facility}</td><td>${r.status}</td></tr>`).join("") || `<tr><td colspan='4' class='muted'>无可见数据</td></tr>`}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card panel">
+            <h3>孵化任务进度反馈</h3>
+            <textarea id="progressFeedback" placeholder="填写本农场孵化任务进度反馈..." ${allowSubmit ? "" : "disabled"}></textarea>
+            <button class="primary" id="submitProgress" style="margin-top:8px;" ${allowSubmit ? "" : "disabled"}>提交反馈</button>
+          </div>
+        </div>
+      `;
+
+      const submitFacility = document.getElementById("submitFacility");
+      if (submitFacility) {
+        submitFacility.onclick = () => {
+          if (!can("submit")) return;
+          const facilityInput = document.getElementById("facilityName");
+          const facility = facilityInput.value.trim();
+          if (!facility) return alert("请输入设施名称");
+          const id = `R${String(Date.now()).slice(-4)}`;
+          const farmId = currentAccount.farmId || db.farms[0].farmId;
+          db.facilityApply.unshift({ id, farmId, facility, status: "待审核" });
+          save(STORAGE.data, db);
+          renderByMenu(currentMenu);
+        };
+      }
+
+      const submitProgress = document.getElementById("submitProgress");
+      if (submitProgress) {
+        submitProgress.onclick = () => {
+          if (!can("submit")) return;
+          const text = document.getElementById("progressFeedback").value.trim();
+          if (!text) return alert("请输入反馈内容");
+          alert("孵化任务进度反馈已提交");
+        };
+      }
+    }
+
+    function renderQuality() {
+      el.pageTitle.textContent = "品控溯源管理";
+      el.pageDesc.textContent = "品控标准制定、抽检审核、AI方案复核、报告生成";
+      const standards = db.qualityStandards;
+      const qRows = db.quality.filter((x) => dataAllowed({ module: "quality", farmId: x.farmId }));
+
+      el.main.innerHTML = `
+        <div class="grid-2">
+          <div class="card panel table-wrap">
+            <div class="row wrap" style="justify-content:space-between;margin-bottom:8px;">
+              <h3>标准制定</h3>
+              <div class="ops">${actionBtn("新增标准", "edit", "")}${actionBtn("删除标准", "delete", "danger")}</div>
+            </div>
+            <table><thead><tr><th>ID</th><th>标准名</th><th>版本</th><th>操作</th></tr></thead><tbody>
+              ${standards.map((s) => `<tr><td>${s.id}</td><td>${s.name}</td><td>${s.version}</td><td class="ops">${actionBtn("查看", "view", "")}${actionBtn("编辑", "edit", "")}</td></tr>`).join("")}
+            </tbody></table>
+          </div>
+          <div class="card panel table-wrap">
+            <div class="row wrap" style="justify-content:space-between;margin-bottom:8px;">
+              <h3>抽检审核</h3>
+              <div class="ops">${actionBtn("生成报告", "audit", "")}${actionBtn("导出", "view", "")}</div>
+            </div>
+            <table><thead><tr><th>批次</th><th>农场</th><th>结果</th><th>状态</th><th>操作</th></tr></thead><tbody>
+              ${qRows.map((r) => `<tr><td>${r.batch}</td><td>${r.farmId}</td><td>${r.sampleResult}</td><td><span class='tag ${r.status === "已通过" ? "ok" : "warn"}'>${r.status}</span></td><td class='ops'>${actionBtn("审核", "audit", "")}${actionBtn("编辑", "edit", "")}</td></tr>`).join("") || `<tr><td colspan='5' class='muted'>无可见数据</td></tr>`}
+            </tbody></table>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderLive() {
+      el.pageTitle.textContent = "直播管理";
+      el.pageDesc.textContent = "直播预约申请与审核";
+      const rows = db.liveApply.filter((x) => dataAllowed({ module: "live", farmId: x.farmId }));
+      const allowSubmit = can("submit");
+      el.main.innerHTML = `
+        <div class="card panel">
+          <div class="row wrap" style="justify-content:space-between;margin-bottom:8px;">
+            <h3>直播申请单</h3>
+            <div class="ops">${actionBtn("审核通过", "audit", "")}${actionBtn("驳回", "audit", "danger")}</div>
+          </div>
+          <div class="table-wrap"><table><thead><tr><th>单号</th><th>农场</th><th>主题</th><th>状态</th></tr></thead><tbody>
+            ${rows.map((r) => `<tr><td>${r.id}</td><td>${r.farmId}</td><td>${r.theme}</td><td>${r.status}</td></tr>`).join("") || `<tr><td colspan='4' class='muted'>无可见数据</td></tr>`}
+          </tbody></table></div>
+          <div style="margin-top:10px;" class="row">
+            <input id="liveTheme" placeholder="填写直播主题" ${allowSubmit ? "" : "disabled"} />
+            <button class="primary" id="submitLive" ${allowSubmit ? "" : "disabled"}>提交直播申请</button>
+          </div>
+        </div>
+      `;
+
+      const btn = document.getElementById("submitLive");
+      if (btn) {
+        btn.onclick = () => {
+          if (!can("submit")) return;
+          const input = document.getElementById("liveTheme");
+          const theme = input.value.trim();
+          if (!theme) return alert("请输入直播主题");
+          const id = `L${String(Date.now()).slice(-4)}`;
+          const farmId = currentAccount.farmId || db.farms[0].farmId;
+          db.liveApply.unshift({ id, farmId, theme, status: "待审核" });
+          save(STORAGE.data, db);
+          renderByMenu(currentMenu);
+        };
+      }
+    }
+
+    function renderMarketing() {
+      el.pageTitle.textContent = "营销管理";
+      el.pageDesc.textContent = "营销活动数据（示例）";
+      el.main.innerHTML = `
+        <div class="card panel">
+          <h3>活动列表</h3>
+          <div class="table-wrap"><table><thead><tr><th>活动</th><th>状态</th><th>操作</th></tr></thead><tbody>
+            <tr><td>春季采摘节</td><td><span class="tag ok">进行中</span></td><td class="ops">${actionBtn("查看", "view", "")}${actionBtn("编辑", "edit", "")}</td></tr>
+            <tr><td>品牌直播周</td><td><span class="tag">筹备中</span></td><td class="ops">${actionBtn("查看", "view", "")}${actionBtn("编辑", "edit", "")}</td></tr>
+          </tbody></table></div>
+        </div>
+      `;
+    }
+
+    function renderFinance() {
+      el.pageTitle.textContent = "财务管理";
+      el.pageDesc.textContent = "费用明细按数据权限过滤";
+      const rows = db.finance.filter((x) => dataAllowed({ module: "finance", farmId: x.farmId }));
+      el.main.innerHTML = `
+        <div class="card panel table-wrap">
+          <div class="row wrap" style="justify-content:space-between;margin-bottom:8px;">
+            <h3>费用明细</h3>
+            <div class="ops">${actionBtn("导出", "view", "")}${actionBtn("调整收费标准", "config", "")}</div>
+          </div>
+          <table><thead><tr><th>农场</th><th>月份</th><th>费用(元)</th><th>状态</th><th>操作</th></tr></thead><tbody>
+            ${rows.map((r) => `<tr><td>${r.farmId}</td><td>${r.month}</td><td>${r.fee}</td><td>${r.status}</td><td class='ops'>${actionBtn("查看", "view", "")}${actionBtn("编辑", "edit", "")}${actionBtn("删除", "delete", "danger")}</td></tr>`).join("") || `<tr><td colspan='5' class='muted'>无可见数据</td></tr>`}
+          </tbody></table>
+        </div>
+      `;
+    }
+
+    function roleOptions(selectedId) {
+      return roles.map((r) => `<option value="${r.id}" ${r.id === selectedId ? "selected" : ""}>${r.name}</option>`).join("");
+    }
+
+    function menuChecks(selected) {
+      const set = new Set(selected || []);
+      return MENUS.filter((m) => !m.parent).map((m) => `<label class='row' style='margin-bottom:6px;'><input type='checkbox' value='${m.id}' ${set.has(m.id) ? "checked" : ""} style='width:auto;'>${m.name}</label>`).join("");
+    }
+
+    function renderSettings() {
+      el.pageTitle.textContent = "系统设置 - 用户管理";
+      el.pageDesc.textContent = "角色创建、权限分配、账号绑定（仅超级管理员可配置）";
+
+      if (!can("config")) {
+        el.main.innerHTML = `<div class='card panel'><h3>无权限</h3><p class='muted' style='margin-top:8px;'>仅总部超级管理员可进入系统设置并执行角色创建、权限分配与账号绑定。</p></div>`;
+        return;
+      }
+
+      el.main.innerHTML = `
+        <div class="grid-2">
+          <div class="card panel">
+            <h3>角色创建</h3>
+            <input id="newRoleName" placeholder="角色名称" style="margin-top:8px;">
+            <div class="row" style="margin-top:8px;">
+              <select id="newRoleLevel">
+                <option value="2">2级-总部部门管理员</option>
+                <option value="3">3级-品控委员会专家</option>
+                <option value="4">4级-入孵农场主</option>
+              </select>
+              <select id="newRoleDataScope">
+                <option value="dept_related">部门相关数据</option>
+                <option value="quality_global">全域品控数据</option>
+                <option value="farm_self">自身农场数据</option>
+              </select>
+            </div>
+            <div style="margin-top:8px;" class="muted">菜单权限（一级菜单）</div>
+            <div id="newRoleMenus" style="margin-top:6px;">${menuChecks([])}</div>
+            <button class="primary" id="createRole" style="margin-top:8px;">创建角色</button>
+          </div>
+
+          <div class="card panel">
+            <h3>账号绑定与自定义菜单</h3>
+            <select id="bindAccount" style="margin-top:8px;">${accounts.map((a) => `<option value='${a.id}'>${a.displayName}(${a.username})</option>`).join("")}</select>
+            <select id="bindRole" style="margin-top:8px;">${roleOptions(accounts[0]?.roleId || "")}</select>
+            <div style="margin-top:8px;" class="muted">账号自定义可操作菜单（在角色基础上追加）</div>
+            <div id="bindMenus" style="margin-top:6px;">${menuChecks(accounts[0]?.customMenuIds || [])}</div>
+            <button class="primary" id="saveBind" style="margin-top:8px;">保存绑定</button>
+          </div>
+        </div>
+
+        <div class="card panel table-wrap">
+          <h3>角色与账号清单</h3>
+          <table style="margin-top:8px;"><thead><tr><th>账号</th><th>角色</th><th>等级</th><th>数据权限</th><th>可见菜单数</th></tr></thead><tbody>
+            ${accounts.map((a) => {
+              const r = getRole(a.roleId);
+              const menus = mergedMenuIds(a, r);
+              return `<tr><td>${a.displayName}</td><td>${r.name}</td><td>${r.level}</td><td>${r.dataScope}</td><td>${menus.length}</td></tr>`;
+            }).join("")}
+          </tbody></table>
+        </div>
+      `;
+
+      document.getElementById("createRole").onclick = () => {
+        const name = document.getElementById("newRoleName").value.trim();
+        if (!name) return alert("请输入角色名称");
+        const level = Number(document.getElementById("newRoleLevel").value);
+        const dataScope = document.getElementById("newRoleDataScope").value;
+        const checks = Array.from(document.querySelectorAll("#newRoleMenus input[type='checkbox']:checked"));
+        const level1Ids = checks.map((c) => c.value);
+        const level2Ids = MENUS.filter((m) => m.parent && level1Ids.includes(m.parent)).map((m) => m.id);
+        const menuIds = [...level1Ids, ...level2Ids];
+        const actionsByLevel = {
+          2: ["view", "edit", "audit"],
+          3: ["view", "edit", "audit"],
+          4: ["view", "submit"]
+        };
+        roles.push({
+          id: `custom_${Date.now()}`,
+          name,
+          level,
+          dept: "custom",
+          menuIds,
+          actions: actionsByLevel[level] || ["view"],
+          dataScope
+        });
+        save(STORAGE.roles, roles);
+        alert("角色创建成功");
+        renderByMenu("settings");
+      };
+
+      const bindAccount = document.getElementById("bindAccount");
+      const bindRole = document.getElementById("bindRole");
+      const bindMenus = document.getElementById("bindMenus");
+
+      function refreshBindMenus() {
+        const acc = accounts.find((x) => x.id === bindAccount.value);
+        bindRole.innerHTML = roleOptions(acc.roleId);
+        bindMenus.innerHTML = menuChecks(acc.customMenuIds || []);
+      }
+
+      bindAccount.onchange = refreshBindMenus;
+      refreshBindMenus();
+
+      document.getElementById("saveBind").onclick = () => {
+        const acc = accounts.find((x) => x.id === bindAccount.value);
+        if (!acc) return;
+        acc.roleId = bindRole.value;
+        const custom = Array.from(bindMenus.querySelectorAll("input[type='checkbox']:checked")).map((x) => x.value);
+        acc.customMenuIds = custom;
+        save(STORAGE.accounts, accounts);
+        alert("账号绑定已保存");
+        renderAccountOptions();
+        if (acc.id === currentAccount.id) {
+          currentAccount = acc;
+          ensureMenuVisible();
+          renderAll();
+        } else {
+          renderByMenu("settings");
+        }
+      };
+    }
+
+    function renderByMenu(menuId) {
+      currentMenu = menuId;
+      if (["overview"].includes(menuId)) return renderOverview();
+      if (["incubation", "inc_progress", "inc_ai"].includes(menuId)) return renderIncubation();
+      if (["quality", "quality_standard", "quality_sampling", "quality_report"].includes(menuId)) return renderQuality();
+      if (["live", "live_apply"].includes(menuId)) return renderLive();
+      if (["marketing", "marketing_campaign"].includes(menuId)) return renderMarketing();
+      if (["finance", "finance_fee"].includes(menuId)) return renderFinance();
+      if (["settings", "settings_users"].includes(menuId)) return renderSettings();
+      return renderOverview();
+    }
+
+    function ensureMenuVisible() {
+      if (!canViewMenu(currentMenu)) {
+        const role = accountRole();
+        const visible = mergedMenuIds(currentAccount, role);
+        currentMenu = visible.includes("overview") ? "overview" : visible[0] || "overview";
+      }
+    }
+
+    function renderAll() {
+      renderIdentity();
+      renderMenus();
+      ensureMenuVisible();
+      renderByMenu(currentMenu);
+      renderMenus();
+    }
+
+    el.switchAccount.onclick = () => {
+      const next = accounts.find((a) => a.id === el.accountSelect.value);
+      if (!next) return;
+      currentAccount = next;
+      ensureMenuVisible();
+      renderAll();
+    };
+
+    el.menuL1.onclick = (e) => {
+      const btn = e.target.closest("button[data-menu]");
+      if (!btn) return;
+      const menuId = btn.dataset.menu;
+      const child = MENUS.find((m) => m.parent === menuId && canViewMenu(m.id));
+      renderByMenu(child ? child.id : menuId);
+      renderMenus();
+    };
+
+    el.menuL2.onclick = (e) => {
+      const btn = e.target.closest("button[data-menu]");
+      if (!btn) return;
+      renderByMenu(btn.dataset.menu);
+      renderMenus();
+    };
+
+    renderAccountOptions();
+    renderAll();
+  </script>
+</body>
+</html>
