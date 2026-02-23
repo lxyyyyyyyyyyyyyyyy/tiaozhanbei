@@ -3,269 +3,462 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>总部权限管理平台</title>
+  <title>客乡汇总部管理中台</title>
   <style>
     :root {
-      --bg: #f3f6fb;
-      --surface: #ffffff;
-      --text: #1f2a37;
-      --muted: #66768a;
-      --primary: #0d6efd;
-      --border: #dce5f1;
-      --danger: #d63649;
-      --ok: #129968;
-      --warn: #c18408;
-      --shadow: 0 10px 26px rgba(34, 52, 84, 0.08);
-      --r: 12px;
+      --red: #D82E2F;
+      --green: #39B54A;
+      --blue: #1E50B3;
+      --bg: #F8F9FA;
+      --surface: #FFFFFF;
+      --text: #1E2430;
+      --muted: #6D7687;
+      --border: #D7DFEF;
+      --warn: #F5A623;
+      --danger: #D82E2F;
+      --ok: #1F9C49;
+      --shadow: 0 10px 28px rgba(24, 49, 112, 0.08);
+      --r: 10px;
+      --left: 200px;
+      --right: 300px;
+      --top: 60px;
     }
-
     * { box-sizing: border-box; }
-
     body {
       margin: 0;
       background: linear-gradient(180deg, #ecf3ff 0, #f3f6fb 180px);
       color: var(--text);
       font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
     }
-
-    .layout {
-      width: min(1280px, 96vw);
-      margin: 18px auto;
-      display: grid;
-      grid-template-columns: 260px 1fr;
-      gap: 14px;
+    .app { min-height: 100vh; }
+    .left {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: var(--left);
+      height: 100vh;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      z-index: 30;
     }
-
+    .brand {
+      padding: 14px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .brand h1 {
+      margin: 0;
+      font-size: 18px;
+      color: var(--red);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .lamp {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #ff5d5f, #D82E2F 65%);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.5);
+    }
+    .slogan { margin-top: 6px; font-size: 12px; color: var(--muted); }
+    .left-scroll { flex: 1; overflow: auto; padding: 10px; }
+    .menu-title { font-size: 12px; color: var(--muted); margin: 8px 0; }
+    .menu-btn {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #fff;
+      color: #222;
+      padding: 8px;
+      margin-bottom: 6px;
+      cursor: pointer;
+      text-align: left;
+      font-size: 13px;
+    }
+    .menu-btn.active {
+      color: #fff;
+      background: linear-gradient(120deg, #D82E2F, #EF5A5A);
+      border-color: #D82E2F;
+      box-shadow: 0 6px 14px rgba(216,46,47,.25);
+      font-weight: 700;
+    }
+    .left-bottom { border-top: 1px solid var(--border); padding: 10px; font-size: 12px; color: var(--muted); }
+    .left-bottom b { color: var(--text); }
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: var(--left);
+      right: var(--right);
+      height: var(--top);
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: 1fr 1.2fr 1fr;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      z-index: 25;
+    }
+    .crumb { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .crumb a { color: var(--blue); cursor: pointer; }
+    .search-wrap { display: flex; gap: 6px; }
+    input, select, textarea, button {
+      font-family: inherit;
+      font-size: 13px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 9px;
+      background: #fff;
+      width: 100%;
+    }
+    button {
+      cursor: pointer;
+      width: auto;
+      min-width: 76px;
+      color: var(--blue);
+      background: #EFF4FF;
+      transition: .2s;
+    }
+    button:hover { transform: translateY(-1px); }
+    button.primary { background: var(--red); color: #fff; border-color: var(--red); }
+    button.ok { background: var(--green); border-color: var(--green); color: #fff; }
+    button.danger { background: #fff0f0; border-color: #efb3b3; color: var(--red); }
+    button:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+    .quick { display: flex; gap: 6px; justify-content: flex-end; }
+    .quick button { min-width: 62px; }
+    .right {
+      position: fixed;
+      right: 0;
+      top: 0;
+      width: var(--right);
+      height: 100vh;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      z-index: 30;
+      display: flex;
+      flex-direction: column;
+      transition: transform .22s;
+    }
+    .right.collapsed { transform: translateX(calc(var(--right) - 78px)); }
+    .right.collapsed .right-scroll { display: none; }
+    .right.collapsed .right-head { justify-content: center; }
+    .right.collapsed .right-head b { display: none; }
+    .right.collapsed #toggleRight { min-width: 62px; }
+    #rightExpandHandle {
+      position: fixed;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 26px;
+      height: 72px;
+      border: 1px solid var(--border);
+      border-right: 0;
+      border-radius: 10px 0 0 10px;
+      background: var(--surface);
+      color: var(--blue);
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      z-index: 31;
+      box-shadow: 0 6px 14px rgba(0,0,0,.08);
+      display: none;
+    }
+    #rightExpandHandle.show { display: block; }
+    .right-head {
+      height: var(--top);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px;
+    }
+    .right-scroll { flex: 1; overflow: auto; padding: 8px; }
+    .main {
+      margin-left: var(--left);
+      margin-right: var(--right);
+      margin-top: var(--top);
+      padding: 12px;
+      min-height: calc(100vh - var(--top));
+    }
     .card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--r);
       box-shadow: var(--shadow);
+      overflow: hidden;
     }
-
-    .panel { padding: 14px; }
-
-    h1, h2, h3, p { margin: 0; }
-
-    .logo {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      margin-bottom: 14px;
-    }
-
-    .logo b {
-      width: 30px;
-      height: 30px;
-      border-radius: 8px;
-      display: grid;
-      place-items: center;
-      background: linear-gradient(135deg, #0d6efd, #4ea1ff);
-      color: #fff;
-    }
-
-    .muted { color: var(--muted); font-size: 13px; }
-
-    select, input, textarea, button {
-      width: 100%;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 8px 10px;
-      font-size: 14px;
-      font-family: inherit;
-      background: #fff;
-    }
-
-    button {
-      cursor: pointer;
-      background: #f4f8ff;
-      color: #2556a5;
-      transition: .2s;
-    }
-
-    button.primary {
-      background: var(--primary);
-      color: #fff;
-      border-color: var(--primary);
-    }
-
-    button.danger {
-      background: var(--danger);
-      color: #fff;
-      border-color: var(--danger);
-    }
-
-    button:disabled {
-      cursor: not-allowed;
-      opacity: .45;
-    }
-
-    .row { display: flex; gap: 8px; align-items: center; }
-    .row.wrap { flex-wrap: wrap; }
-
-    .menu-group { margin-top: 12px; }
-
-    .menu-title {
-      font-size: 12px;
-      color: var(--muted);
-      margin-bottom: 8px;
-      letter-spacing: .4px;
-    }
-
-    .menu-btn {
-      text-align: left;
-      margin-bottom: 6px;
-      background: #f8fbff;
-    }
-
-    .menu-btn.active {
-      background: #dfeeff;
-      border-color: #b6d3ff;
-      color: #124a96;
-      font-weight: 700;
-    }
-
-    .main-head {
-      padding: 14px;
+    .card + .card { margin-top: 10px; }
+    .card-head {
+      padding: 10px 12px;
       border-bottom: 1px solid var(--border);
+      background: linear-gradient(90deg, rgba(216,46,47,.12), rgba(57,181,74,.08));
       display: flex;
       justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
     }
-
-    .pill {
-      display: inline-block;
-      font-size: 12px;
-      padding: 4px 8px;
-      border-radius: 999px;
-      background: #eef4ff;
-      color: #315a94;
-      margin-right: 6px;
-      margin-bottom: 6px;
+    .card-head h3 {
+      margin: 0;
+      font-size: 16px;
+      color: #222;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-
-    .content { padding: 14px; display: grid; gap: 14px; }
-
-    .kpi-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
+    .card-body {
+      margin: 0;
+      background: linear-gradient(180deg, #ecf3ff 0, #f3f6fb 180px);
+      color: var(--text);
+      font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
     }
-
-    .kpi { padding: 12px; border: 1px solid var(--border); border-radius: 10px; }
-    .kpi b { font-size: 26px; }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 14px;
-    }
-
+    .tag.warn { background: #fff0d7; color: #965f00; }
+    .tag.ok { background: #dff7e4; color: #1d7e3d; }
+    .tag.err { background: #ffe1e1; color: #9b1010; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
     th, td {
-      text-align: left;
       border-bottom: 1px solid var(--border);
-      padding: 9px 6px;
+      padding: 8px 6px;
+      text-align: left;
       vertical-align: top;
     }
-
-    .table-wrap { overflow: auto; }
-
     .ops { display: flex; gap: 6px; flex-wrap: wrap; }
-
-    .tag {
-      font-size: 12px;
-      padding: 2px 8px;
-      border-radius: 999px;
-      color: #1f4f90;
-      background: #eaf2ff;
+    .row { display: flex; gap: 8px; align-items: center; }
+    .row.wrap { flex-wrap: wrap; }
+    .between { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+    .table-wrap { overflow: auto; }
+    .bar { background: #edf1fb; border-radius: 999px; height: 10px; overflow: hidden; }
+    .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--red), var(--green)); }
+    .chart-ring {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      background: conic-gradient(var(--red) 0 48%, var(--green) 48% 83%, var(--blue) 83% 100%);
+      position: relative;
+      margin: 4px auto;
     }
-
-    .tag.ok { color: #126f4d; background: #e4f7ef; }
-    .tag.warn { color: #875f0d; background: #fff3da; }
-
-    .grid-2 {
+    .chart-ring::after {
+      content: "";
+      position: absolute;
+      inset: 18px;
+      border-radius: 50%;
+      background: #fff;
+    }
+    .chart-bars .item { margin-bottom: 8px; }
+    .chart-bars .line {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
+      grid-template-columns: 64px 1fr 38px;
+      gap: 8px;
+      align-items: center;
     }
-
-    .hidden { display: none !important; }
-
-    @media (max-width: 980px) {
-      .layout { grid-template-columns: 1fr; }
-      .kpi-grid, .grid-2 { grid-template-columns: 1fr; }
+    .vmap { width: 100%; height: 320px; border: 1px dashed var(--border); border-radius: 10px; background: linear-gradient(180deg, #f7fbff, #edf4ff); }
+    .vmap text { font-size: 12px; fill: #375075; }
+    .map-farm { cursor: pointer; }
+    .map-farm circle { stroke: #fff; stroke-width: 2; }
+    .mini-chart { width: 100%; height: 180px; border: 1px solid var(--border); border-radius: 10px; background: #fff; }
+    .kpi-pro { background: linear-gradient(160deg, #ffffff, #f7fbff); border-color: #d5e2f5; box-shadow: 0 6px 14px rgba(26,77,154,.08); }
+    .kpi-top { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+    .kpi-chip { font-size: 11px; padding: 2px 7px; border-radius: 999px; }
+    .kpi-chip.up { background:#e2f6e9; color:#1c8f45; }
+    .kpi-chip.down { background:#ffe8e8; color:#a92323; }
+    .kpi-foot { height: 5px; background: #edf3ff; border-radius: 999px; margin-top: 8px; overflow: hidden; }
+    .kpi-foot i { display:block; height:100%; background: linear-gradient(90deg,#1E50B3,#66a7ff); }
+    .dashboard-overview .card-head {
+      padding: 14px 16px;
+    }
+    .dashboard-overview .card-head h3 {
+      font-size: 17px;
+    }
+    .dashboard-overview-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 8px;
+      border-radius: 10px;
+      background: rgba(255,255,255,.7);
+      border: 1px solid #dfe8f6;
+    }
+    .dashboard-overview-toolbar .muted { white-space: nowrap; }
+    .dashboard-overview-toolbar input { width: 88px !important; }
+    .dashboard-overview-body {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(180px, 1fr));
+      padding: 18px;
+      gap: 16px;
+      background: linear-gradient(180deg, #eef5ff 0, #f6f9ff 220px);
+    }
+    .dashboard-overview-body .kpi {
+      border: 1px solid #d5e2f5;
+      padding: 14px 14px 12px;
+      border-radius: 12px;
+    }
+    .dashboard-overview-body .kpi .muted {
+      line-height: 1.4;
+    }
+    .status-map .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+    .dot.normal { background: #39B54A; }
+    .dot.test { background: #1E50B3; }
+    .dot.fix { background: #D82E2F; }
+    .dot.grad { background: #888; }
+    .panel-note {
+      border: 1px dashed #e2b7b7;
+      border-radius: 8px;
+      padding: 7px 8px;
+      background: #fff7f7;
+      font-size: 12px;
+      color: #853333;
+    }
+    .toast {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      background: #212a38;
+      color: #fff;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,.25);
+      opacity: 0;
+      transform: translateY(8px);
+      transition: .2s;
+      z-index: 90;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    @media (max-width: 1220px) {
+      .topbar { right: 0; }
+      .right { display: none; }
+      #rightExpandHandle { display: none !important; }
+      .main { margin-right: 0; }
+      .dashboard-overview-body { grid-template-columns: repeat(2, minmax(160px, 1fr)); }
+      .g6 { grid-template-columns: repeat(3, 1fr); }
+      .g4 { grid-template-columns: repeat(2, 1fr); }
+      .g3, .g2 { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 860px) {
+      :root { --left: 0px; }
+      .dashboard-overview-body { grid-template-columns: 1fr; }
+      .left {
+        position: static;
+        width: 100%;
+        height: auto;
+        border-right: 0;
+      }
+      .topbar {
+        position: static;
+        left: 0;
+        height: auto;
+        grid-template-columns: 1fr;
+      }
+      .main { margin: 0; min-height: auto; }
     }
   </style>
 </head>
 <body>
-  <div class="layout">
-    <aside class="card panel">
-      <div class="logo"><b>HQ</b><div><h3>总部权限平台</h3><div class="muted">四级角色三层控制</div></div></div>
-
-      <div>
-        <div class="muted" style="margin-bottom:6px;">登录账号</div>
-        <select id="accountSelect"></select>
-        <button class="primary" id="switchAccount" style="margin-top:8px;">登录 / 切换</button>
+  <div class="app">
+    <aside class="left">
+      <div class="brand">
+        <h1><span class="lamp"></span>客乡汇总部端</h1>
+        <div class="slogan">花灯映客乡，玩在创客镇</div>
       </div>
-
-      <div style="margin-top:10px;" class="card panel">
-        <div class="muted">当前身份</div>
-        <div id="whoami" style="margin-top:6px;font-size:14px;"></div>
-      </div>
-
-      <div class="menu-group">
-        <div class="menu-title">一级菜单</div>
-        <div id="menuLevel1"></div>
-      </div>
-
-      <div class="menu-group">
+      <div class="left-scroll">
+        <div class="menu-title">登录账号</div>
+        <div class="row">
+          <select id="accountSelect" style="flex:1"></select>
+          <button id="switchAccount" class="primary">切换</button>
+        </div>
+        <div class="menu-title" style="margin-top:10px;">一级菜单</div>
+        <div id="menuL1"></div>
         <div class="menu-title">二级菜单</div>
-        <div id="menuLevel2"></div>
+        <div id="menuL2"></div>
       </div>
+      <div class="left-bottom" id="identity"></div>
     </aside>
 
-    <section class="card">
-      <div class="main-head">
-        <div>
-          <h2 id="pageTitle">总览</h2>
-          <div class="muted" id="pageDesc">基于角色展示菜单、按钮和数据范围</div>
-        </div>
-        <div>
-          <span class="pill" id="pillLevel"></span>
-          <span class="pill" id="pillDataScope"></span>
-          <span class="pill" id="pillOps"></span>
-        </div>
+    <header class="topbar">
+      <div class="crumb" id="breadcrumb"></div>
+      <div class="search-wrap">
+        <input id="globalSearch" placeholder="搜索农场/农场主/批次/直播/关键词" />
+        <button id="searchBtn">搜索</button>
       </div>
-      <div class="content" id="mainContent"></div>
-    </section>
+      <div class="quick">
+        <button id="todoBtn">待办(<span id="todoCount">0</span>)</button>
+        <button id="notifyBtn">通知</button>
+        <button id="exportBtn">导出</button>
+        <button id="refreshBtn">刷新</button>
+        <button id="jumpCockpit">驾驶舱</button>
+      </div>
+    </header>
+
+    <main class="main" id="main"></main>
+
+    <aside class="right" id="rightPane">
+      <div class="right-head">
+        <b>辅助信息栏</b>
+        <button id="toggleRight">折叠</button>
+      </div>
+      <div class="right-scroll" id="rightContent"></div>
+    </aside>
+    <button id="rightExpandHandle" aria-label="展开辅助信息栏">◀</button>
   </div>
+  <div class="toast" id="toast"></div>
 
   <script>
     const STORAGE = {
-      roles: "hq_roles_v2",
-      accounts: "hq_accounts_v2",
-      data: "hq_data_v2"
+      roles: "kx_roles_v1",
+      accounts: "kx_accounts_v1",
+      db: "kx_db_v1",
+      logs: "kx_logs_v1",
+      drafts: "kx_drafts_v1",
+      ui: "kx_ui_v1"
     };
 
     const MENUS = [
-      { id: "overview", name: "运营总览", parent: null },
-      { id: "incubation", name: "孵化管理", parent: null },
-      { id: "quality", name: "品控溯源管理", parent: null },
-      { id: "live", name: "直播管理", parent: null },
-      { id: "marketing", name: "营销管理", parent: null },
-      { id: "finance", name: "财务管理", parent: null },
-      { id: "settings", name: "系统设置", parent: null },
+      { id: "dashboard", name: "首页·数据驾驶舱", parent: null, module: "dashboard" },
+      { id: "incubation", name: "农场孵化管理", parent: null, module: "incubation" },
+      { id: "quality", name: "品控溯源管理", parent: null, module: "quality" },
+      { id: "facility", name: "共享设施管理", parent: null, module: "facility" },
+      { id: "live", name: "直播运营管理", parent: null, module: "live" },
+      { id: "marketing", name: "营销引流管理", parent: null, module: "marketing" },
+      { id: "finance", name: "财务收费管理", parent: null, module: "finance" },
+      { id: "settings", name: "系统设置", parent: null, module: "settings" },
 
-      { id: "inc_progress", name: "孵化进度", parent: "incubation" },
-      { id: "inc_ai", name: "AI孵化方案", parent: "incubation" },
-      { id: "quality_standard", name: "标准制定", parent: "quality" },
-      { id: "quality_sampling", name: "抽检审核", parent: "quality" },
-      { id: "quality_report", name: "品控报告", parent: "quality" },
-      { id: "live_apply", name: "直播申请", parent: "live" },
-      { id: "marketing_campaign", name: "营销活动", parent: "marketing" },
-      { id: "finance_fee", name: "费用明细", parent: "finance" },
-      { id: "settings_users", name: "用户管理", parent: "settings" }
+      { id: "inc_apply", name: "入驻申请管理", parent: "incubation", module: "incubation" },
+      { id: "inc_progress", name: "孵化进度跟踪", parent: "incubation", module: "incubation" },
+      { id: "inc_assess", name: "阶段性考核", parent: "incubation", module: "incubation" },
+      { id: "inc_diff", name: "同质化规避配置", parent: "incubation", module: "incubation" },
+
+      { id: "q_standard", name: "品控标准管理", parent: "quality", module: "quality" },
+      { id: "q_sampling", name: "抽检执行管理", parent: "quality", module: "quality" },
+      { id: "q_trace", name: "溯源码管理", parent: "quality", module: "quality" },
+      { id: "q_anti", name: "防伪保障管理", parent: "quality", module: "quality" },
+
+      { id: "f_cold", name: "共享冷链中心", parent: "facility", module: "facility" },
+      { id: "f_factory", name: "透明加工工坊", parent: "facility", module: "facility" },
+      { id: "f_device", name: "共享农具/设备中心", parent: "facility", module: "facility" },
+      { id: "f_fee", name: "费用统计", parent: "facility", module: "facility" },
+
+      { id: "l_spot", name: "直播点位/设备管理", parent: "live", module: "live" },
+      { id: "l_apply", name: "直播预约审核", parent: "live", module: "live" },
+      { id: "l_host", name: "主播孵化管理", parent: "live", module: "live" },
+      { id: "l_ai", name: "AI直播辅助", parent: "live", module: "live" },
+      { id: "l_assets", name: "内容素材库", parent: "live", module: "live" },
+
+      { id: "m_online", name: "线上引流管理", parent: "marketing", module: "marketing" },
+      { id: "m_offline", name: "线下引流管理", parent: "marketing", module: "marketing" },
+      { id: "m_brand", name: "区域品牌联动", parent: "marketing", module: "marketing" },
+      { id: "m_route", name: "AI路线配置", parent: "marketing", module: "marketing" },
+
+      { id: "fin_rule", name: "收费标准配置", parent: "finance", module: "finance" },
+      { id: "fin_bill", name: "费用核算与收取", parent: "finance", module: "finance" },
+      { id: "fin_risk", name: "风险保证金/保底补偿", parent: "finance", module: "finance" },
+      { id: "fin_div", name: "集体资产分红", parent: "finance", module: "finance" },
+
+      { id: "s_user", name: "用户与权限管理", parent: "settings", module: "settings" },
+      { id: "s_brand", name: "品牌视觉配置", parent: "settings", module: "settings" },
+      { id: "s_notice", name: "通知模板设置", parent: "settings", module: "settings" },
+      { id: "s_data", name: "数据管理", parent: "settings", module: "settings" },
+      { id: "s_log", name: "日志管理", parent: "settings", module: "settings" }
     ];
 
     const defaultRoles = [
@@ -274,17 +467,17 @@
         name: "总部超级管理员",
         level: 1,
         dept: "ALL",
-        menuIds: MENUS.map((m) => m.id),
-        actions: ["view", "edit", "delete", "audit", "config", "submit"],
+        menuIds: MENUS.map(m => m.id),
+        actions: ["view", "edit", "delete", "audit", "config", "submit", "export"],
         dataScope: "all"
       },
       {
-        id: "dept_incubation",
+        id: "dept_inc",
         name: "总部部门管理员-孵化",
         level: 2,
         dept: "incubation",
-        menuIds: ["overview", "incubation", "inc_progress", "inc_ai"],
-        actions: ["view", "edit", "audit"],
+        menuIds: ["dashboard", "incubation", "inc_apply", "inc_progress", "inc_assess", "inc_diff", "facility", "f_fee"],
+        actions: ["view", "edit", "audit", "submit", "export"],
         dataScope: "dept_related"
       },
       {
@@ -292,8 +485,8 @@
         name: "总部部门管理员-品控",
         level: 2,
         dept: "quality",
-        menuIds: ["overview", "quality", "quality_standard", "quality_sampling", "quality_report"],
-        actions: ["view", "edit", "audit"],
+        menuIds: ["dashboard", "quality", "q_standard", "q_sampling", "q_trace", "q_anti"],
+        actions: ["view", "edit", "audit", "submit", "export"],
         dataScope: "dept_related"
       },
       {
@@ -301,17 +494,8 @@
         name: "总部部门管理员-直播",
         level: 2,
         dept: "live",
-        menuIds: ["overview", "live", "live_apply"],
-        actions: ["view", "edit", "audit"],
-        dataScope: "dept_related"
-      },
-      {
-        id: "dept_marketing",
-        name: "总部部门管理员-营销",
-        level: 2,
-        dept: "marketing",
-        menuIds: ["overview", "marketing", "marketing_campaign"],
-        actions: ["view", "edit", "audit"],
+        menuIds: ["dashboard", "live", "l_spot", "l_apply", "l_host", "l_ai", "l_assets"],
+        actions: ["view", "edit", "audit", "submit", "export"],
         dataScope: "dept_related"
       },
       {
@@ -319,8 +503,8 @@
         name: "总部部门管理员-财务",
         level: 2,
         dept: "finance",
-        menuIds: ["overview", "finance", "finance_fee"],
-        actions: ["view", "edit", "audit"],
+        menuIds: ["dashboard", "finance", "fin_rule", "fin_bill", "fin_risk", "fin_div", "facility", "f_fee"],
+        actions: ["view", "edit", "audit", "submit", "export"],
         dataScope: "dept_related"
       },
       {
@@ -328,8 +512,8 @@
         name: "品控标准化委员会专家",
         level: 3,
         dept: "quality",
-        menuIds: ["quality", "quality_standard", "quality_sampling", "quality_report"],
-        actions: ["view", "edit", "audit"],
+        menuIds: ["quality", "q_standard", "q_sampling", "q_trace", "q_anti"],
+        actions: ["view", "edit", "audit", "submit", "export"],
         dataScope: "quality_global"
       },
       {
@@ -337,534 +521,1582 @@
         name: "入孵农场主",
         level: 4,
         dept: "farm",
-        menuIds: ["incubation", "inc_progress", "quality", "quality_report", "finance", "finance_fee", "live", "live_apply"],
-        actions: ["view", "submit"],
+        menuIds: ["dashboard", "incubation", "inc_progress", "quality", "q_sampling", "q_trace", "facility", "f_cold", "f_factory", "f_device", "f_fee", "live", "l_apply", "finance", "fin_bill"],
+        actions: ["view", "submit", "export"],
         dataScope: "farm_self"
       }
     ];
 
     const defaultAccounts = [
       { id: "u001", username: "admin", displayName: "总部负责人", roleId: "super_admin", farmId: "" },
-      { id: "u002", username: "inc_mgr", displayName: "孵化部门管理员", roleId: "dept_incubation", farmId: "" },
-      { id: "u003", username: "qc_mgr", displayName: "品控部门管理员", roleId: "dept_quality", farmId: "" },
-      { id: "u004", username: "live_mgr", displayName: "直播部门管理员", roleId: "dept_live", farmId: "" },
-      { id: "u005", username: "finance_mgr", displayName: "财务部门管理员", roleId: "dept_finance", farmId: "" },
-      { id: "u006", username: "qc_expert", displayName: "品控委员会专家", roleId: "qc_expert", farmId: "" },
+      { id: "u002", username: "inc_mgr", displayName: "孵化管理员", roleId: "dept_inc", farmId: "" },
+      { id: "u003", username: "qc_mgr", displayName: "品控管理员", roleId: "dept_quality", farmId: "" },
+      { id: "u004", username: "live_mgr", displayName: "直播管理员", roleId: "dept_live", farmId: "" },
+      { id: "u005", username: "finance_mgr", displayName: "财务管理员", roleId: "dept_finance", farmId: "" },
+      { id: "u006", username: "expert", displayName: "品控专家", roleId: "qc_expert", farmId: "" },
       { id: "u007", username: "farm_a", displayName: "东山农场主", roleId: "farm_owner", farmId: "F001" },
       { id: "u008", username: "farm_b", displayName: "南岭农场主", roleId: "farm_owner", farmId: "F002" }
     ];
 
-    const defaultData = {
+    const defaultDb = {
+      settings: {
+        refreshMinutes: 5,
+        theme: { logo: "", red: "#D82E2F", green: "#39B54A", blue: "#1E50B3" }
+      },
       farms: [
-        { farmId: "F001", farmName: "东山农场", owner: "赵农" },
-        { farmId: "F002", farmName: "南岭农场", owner: "钱农" },
-        { farmId: "F003", farmName: "北湖农场", owner: "孙农" }
+        { farmId: "F001", farmName: "东山农场", owner: "赵农", status: "正常运营", core: true, track: "种养型", area: "A-01", visitor: 1200, revenue7d: 30200, qcScore: 91 },
+        { farmId: "F002", farmName: "南岭农场", owner: "钱农", status: "试运营", core: false, track: "体验型", area: "A-02", visitor: 900, revenue7d: 22600, qcScore: 79 },
+        { farmId: "F003", farmName: "北湖农场", owner: "孙农", status: "需整改", core: false, track: "农家乐型", area: "B-05", visitor: 650, revenue7d: 18100, qcScore: 73 }
       ],
-      incubation: [
-        { farmId: "F001", stage: "育苗", progress: "72%", aiPlan: "待复核", owner: "赵农" },
-        { farmId: "F002", stage: "生长", progress: "58%", aiPlan: "已通过", owner: "钱农" },
-        { farmId: "F003", stage: "采收", progress: "87%", aiPlan: "待复核", owner: "孙农" }
+      incubationApply: [
+        { id: "IA001", farmId: "F003", farmName: "北湖农场", owner: "孙农", time: "2026-02-18", status: "待审核", aiPlan: "草莓+研学" }
       ],
-      quality: [
-        { farmId: "F001", batch: "Q-2301", sampleResult: "合格", status: "待审核", score: 91 },
-        { farmId: "F002", batch: "Q-2302", sampleResult: "复检", status: "已驳回", score: 79 },
-        { farmId: "F003", batch: "Q-2303", sampleResult: "合格", status: "已通过", score: 95 }
+      incubationProgress: [
+        { farmId: "F001", stage: 4, owner: "赵农", due: "2026-03-05", finished: "已完成 4/7", attachmentCount: 3 },
+        { farmId: "F002", stage: 3, owner: "钱农", due: "2026-03-12", finished: "已完成 3/7", attachmentCount: 1 },
+        { farmId: "F003", stage: 2, owner: "孙农", due: "2026-03-15", finished: "已完成 2/7", attachmentCount: 0 }
       ],
-      finance: [
-        { farmId: "F001", month: "2026-02", fee: 6800, status: "待确认" },
-        { farmId: "F002", month: "2026-02", fee: 7200, status: "已确认" },
-        { farmId: "F003", month: "2026-02", fee: 6400, status: "待确认" }
+      assessments: [
+        { id: "AS001", farmId: "F001", qc: 88, culture: 84, growth: 92, score: 88.4, result: "毕业" },
+        { id: "AS002", farmId: "F002", qc: 75, culture: 79, growth: 72, score: 75.2, result: "续孵" }
       ],
-      liveApply: [
-        { id: "L001", farmId: "F001", theme: "草莓采摘", status: "待审核" },
-        { id: "L002", farmId: "F003", theme: "温室巡检", status: "已通过" }
+      diffRules: { tracks: { "种养型": 4, "体验型": 3, "农家乐型": 2 }, radiusKm: 3, crowdTags: ["亲子", "情侣", "研学", "团建"] },
+      qualityStandards: [
+        { id: "QS001", name: "品控标准白皮书", level: "高档", version: "v2.0", owner: "委员会" },
+        { id: "QS002", name: "包装追溯规程", level: "中档", version: "v1.5", owner: "委员会" }
+      ],
+      sampling: [
+        { id: "SP001", farmId: "F001", grade: "高档", cycle: "每月2次", planAt: "2026-02-21", result: "合格", status: "已通过" },
+        { id: "SP002", farmId: "F002", grade: "中档", cycle: "每月1次", planAt: "2026-02-25", result: "复检", status: "待整改" }
+      ],
+      traceCodes: [
+        { id: "TC001", batch: "Q-2301", farmId: "F001", level: "高档", story: "忠信花灯故事", perks: "DIY券", status: "已发布" }
+      ],
+      antiFake: [
+        { id: "AF001", product: "鹰嘴蜜桃", fireSeal: "HS-001", farmId: "F001", photo: "已上传", status: "可核验" }
+      ],
+      facilities: [
+        { id: "cold-01", type: "冷链", name: "冷链库A", state: "使用中", fault: "无", stock: 68 },
+        { id: "factory-01", type: "工坊", name: "加工工位1", state: "空闲", fault: "无", stock: 12 },
+        { id: "device-01", type: "设备", name: "绿幕套装", state: "故障", fault: "灯架故障", stock: 6 }
       ],
       facilityApply: [
-        { id: "R001", farmId: "F001", facility: "冷链库", status: "待审核" },
-        { id: "R002", farmId: "F002", facility: "质检实验室", status: "已通过" }
+        { id: "FA001", farmId: "F001", facilityType: "冷链", facility: "冷链库A", start: "2026-02-22", days: 3, status: "待审核" },
+        { id: "FA002", farmId: "F002", facilityType: "工坊", facility: "加工工位1", start: "2026-02-24", days: 2, status: "已通过" }
       ],
-      qualityStandards: [
-        { id: "S001", name: "草莓糖度标准", version: "v2.0", owner: "委员会" },
-        { id: "S002", name: "包装追溯标准", version: "v1.5", owner: "委员会" }
+      facilityExperience: [
+        { id: "FE001", item: "冷链参观", from: "游客端", qty: 20, date: "2026-02-23" }
+      ],
+      liveSpots: [
+        { id: "LS001", spot: "花灯广场", device: "灯光套组", state: "正常", rental: "占用" },
+        { id: "LS002", spot: "加工工坊", device: "收音套组", state: "故障", rental: "空闲" }
+      ],
+      liveApply: [
+        { id: "LA001", farmId: "F001", spot: "花灯广场", at: "2026-02-22 19:00", theme: "草莓采摘", status: "待审核" }
+      ],
+      hosts: [
+        { id: "H001", name: "赵农", type: "农场主主播", train: "2次", exam: "通过", cert: "已生成" },
+        { id: "H002", name: "阿华", type: "专业主播", train: "5次", exam: "优秀", cert: "已生成" }
+      ],
+      scripts: [
+        { id: "SC001", scene: "直播开场", text: "欢迎来到客乡汇花灯农场直播间" }
+      ],
+      liveReport: [
+        { id: "LR001", room: "L1001", viewers: 11200, interact: "9.6%", orders: 278, advice: "加强前5分钟福利引导" }
+      ],
+      assets: [
+        { id: "AT001", type: "短视频", farmType: "水果", theme: "花灯文化", scene: "直播", status: "已发布" },
+        { id: "AT002", type: "图片", farmType: "花生", theme: "农事", scene: "海报", status: "待审核" }
+      ],
+      ugc: [
+        { id: "UG001", user: "游客A", content: "灯桃缘采摘", likes: 66, status: "待审核" }
+      ],
+      offlineCampaign: [
+        { id: "OF001", city: "深圳", store: "南山快闪店", download: 320, booking: 128, cert: "可生成" }
+      ],
+      brandLink: [
+        { id: "BR001", brand: "万绿河源", product: "联名蜜桃礼盒", status: "待上架审核", sales: 120 }
+      ],
+      routes: [
+        { id: "RT001", crowd: "亲子", duration: "1天", interest: "农事+DIY", path: "小镇-东山-工坊" }
+      ],
+      feeRules: [
+        { id: "FR001", item: "品牌授权年费-核心农场", unit: "元/年", price: 18000 },
+        { id: "FR002", item: "冷链使用费", unit: "元/斤/天", price: 0.5 },
+        { id: "FR003", item: "设备租赁", unit: "元/天", price: 500 }
+      ],
+      bills: [
+        { id: "BL001", farmId: "F001", facilityFee: 2400, serviceFee: 3000, operationFee: 1800, total: 7200, paid: "待结算" },
+        { id: "BL002", farmId: "F002", facilityFee: 1800, serviceFee: 2600, operationFee: 1000, total: 5400, paid: "已结算" }
+      ],
+      riskFund: [
+        { id: "RF001", farmId: "F001", deposit: 12000, frozen: "否", compensate: 0, trigger: "否" },
+        { id: "RF002", farmId: "F002", deposit: 10000, frozen: "是", compensate: 1800, trigger: "是" }
+      ],
+      dividend: { yearProfit: 960000, ratio: 0.12, collective: 0, farms: 0 },
+      notices: [
+        { id: "NT001", type: "孵化进度", channel: "短信/小程序", template: "【客乡汇】{farmName} 请于{deadline}前完成阶段任务" }
+      ],
+      backups: [
+        { id: "BK001", at: "2026-02-20 01:00", mode: "自动", keep: "1年" }
+      ],
+      syncStatus: [
+        { side: "游客端小程序", ok: true, last: "2026-02-20 10:30:00", freq: "1分钟" },
+        { side: "认耕小程序", ok: true, last: "2026-02-20 10:30:00", freq: "实时" },
+        { side: "农场采集系统", ok: true, last: "2026-02-20 10:30:00", freq: "实时" }
+      ],
+      warnings: [
+        { id: "W001", type: "品控不达标", farmId: "F003", status: "待处理" },
+        { id: "W002", type: "设备故障", farmId: "F002", status: "处理中" }
+      ],
+      todos: [
+        { id: "T001", text: "审核农场入驻申请 IA001", priority: "高", status: "待处理", menu: "inc_apply" },
+        { id: "T002", text: "审核直播申请 LA001", priority: "中", status: "待处理", menu: "l_apply" },
+        { id: "T003", text: "处理抽检复检 SP002", priority: "高", status: "待处理", menu: "q_sampling" }
+      ],
+      aiRecommend: [
+        "建议将 F003 导入体验型赛道，减少与 F001 的同质化竞争",
+        "周末客流高峰建议分流到南岭农场体验工坊",
+        "直播话术建议增加‘花灯文化+农产故事’开场模板"
       ]
     };
 
+    const defaultUi = { rightCollapsed: false };
+
+    function deepClone(v) { return JSON.parse(JSON.stringify(v)); }
     function load(key, fallback) {
       const raw = localStorage.getItem(key);
-      if (!raw) return JSON.parse(JSON.stringify(fallback));
-      try { return JSON.parse(raw); } catch { return JSON.parse(JSON.stringify(fallback)); }
+      if (!raw) return deepClone(fallback);
+      try { return JSON.parse(raw); } catch (_) { return deepClone(fallback); }
     }
-
-    function save(key, val) {
-      localStorage.setItem(key, JSON.stringify(val));
-    }
+    function save(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
 
     let roles = load(STORAGE.roles, defaultRoles);
     let accounts = load(STORAGE.accounts, defaultAccounts);
-    let db = load(STORAGE.data, defaultData);
+    let db = load(STORAGE.db, defaultDb);
+    let logs = load(STORAGE.logs, []);
+    let drafts = load(STORAGE.drafts, {});
+    let ui = load(STORAGE.ui, defaultUi);
 
     let currentAccount = accounts[0];
-    let currentMenu = "overview";
+    let currentMenu = "dashboard";
+    let currentL1 = "dashboard";
+    let autoRefreshTimer = null;
 
     const el = {
       accountSelect: document.getElementById("accountSelect"),
       switchAccount: document.getElementById("switchAccount"),
-      whoami: document.getElementById("whoami"),
-      menuL1: document.getElementById("menuLevel1"),
-      menuL2: document.getElementById("menuLevel2"),
-      pageTitle: document.getElementById("pageTitle"),
-      pageDesc: document.getElementById("pageDesc"),
-      pillLevel: document.getElementById("pillLevel"),
-      pillDataScope: document.getElementById("pillDataScope"),
-      pillOps: document.getElementById("pillOps"),
-      main: document.getElementById("mainContent")
+      menuL1: document.getElementById("menuL1"),
+      menuL2: document.getElementById("menuL2"),
+      identity: document.getElementById("identity"),
+      breadcrumb: document.getElementById("breadcrumb"),
+      globalSearch: document.getElementById("globalSearch"),
+      searchBtn: document.getElementById("searchBtn"),
+      todoBtn: document.getElementById("todoBtn"),
+      todoCount: document.getElementById("todoCount"),
+      notifyBtn: document.getElementById("notifyBtn"),
+      exportBtn: document.getElementById("exportBtn"),
+      refreshBtn: document.getElementById("refreshBtn"),
+      jumpCockpit: document.getElementById("jumpCockpit"),
+      main: document.getElementById("main"),
+      rightPane: document.getElementById("rightPane"),
+      rightContent: document.getElementById("rightContent"),
+      toggleRight: document.getElementById("toggleRight"),
+      rightExpandHandle: document.getElementById("rightExpandHandle"),
+      toast: document.getElementById("toast")
     };
 
-    function getRole(roleId) {
-      return roles.find((r) => r.id === roleId) || roles[0];
+    const stageNames = ["方案落地", "设施配套", "培训赋能", "品控初检", "试运营", "考核毕业", "结项归档"];
+    function nowStr() {
+      const d = new Date();
+      const p = (n) => String(n).padStart(2, "0");
+      return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
     }
-
-    function accountRole() {
-      return getRole(currentAccount.roleId);
+    function uid(prefix) { return `${prefix}${String(Date.now()).slice(-6)}`; }
+    function toast(msg) {
+      el.toast.textContent = msg;
+      el.toast.classList.add("show");
+      setTimeout(() => el.toast.classList.remove("show"), 1800);
     }
-
-    function mergedMenuIds(account, role) {
-      const extra = Array.isArray(account.customMenuIds) ? account.customMenuIds : [];
-      return Array.from(new Set([...(role.menuIds || []), ...extra]));
+    function log(action, detail) {
+      logs.unshift({ at: nowStr(), user: currentAccount.username, action, detail });
+      logs = logs.slice(0, 1000);
+      save(STORAGE.logs, logs);
     }
-
-    function can(action) {
-      return accountRole().actions.includes(action);
+    function getRole(id) { return roles.find(r => r.id === id) || roles[0]; }
+    function role() { return getRole(currentAccount.roleId); }
+    function mergedMenus() {
+      const r = role();
+      const custom = Array.isArray(currentAccount.customMenuIds) ? currentAccount.customMenuIds : [];
+      return Array.from(new Set([...(r.menuIds || []), ...custom]));
     }
-
-    function canViewMenu(menuId) {
-      return mergedMenuIds(currentAccount, accountRole()).includes(menuId);
+    function can(action) { return role().actions.includes(action); }
+    function canViewMenu(id) { return mergedMenus().includes(id); }
+    function actionBtn(label, action, cls, attrs) {
+      const dis = can(action) ? "" : "disabled";
+      return `<button ${dis} class="${cls || ""}" ${attrs || ""}>${label}</button>`;
     }
-
-    function dataAllowed(record) {
-      const role = accountRole();
-      if (role.dataScope === "all") return true;
-      if (role.dataScope === "dept_related") return true;
-      if (role.dataScope === "quality_global") return record.module === "quality";
-      if (role.dataScope === "farm_self") return record.farmId === currentAccount.farmId;
+    function confirmThen(msg, fn) { if (window.confirm(msg)) fn(); }
+    function dataAllowed(module, farmId) {
+      const r = role();
+      if (r.dataScope === "all") return true;
+      if (r.dataScope === "dept_related") {
+        if (r.dept === "ALL") return true;
+        if (module === r.dept) return true;
+        if (module === "dashboard") return true;
+        if (r.dept === "finance" && module === "facility") return true;
+        return false;
+      }
+      if (r.dataScope === "quality_global") return module === "quality";
+      if (r.dataScope === "farm_self") return farmId === currentAccount.farmId;
       return false;
     }
-
-    function actionBtn(label, action, cls, datasetText) {
-      const disabled = !can(action) ? "disabled" : "";
-      return `<button ${disabled} class="${cls || ""}" data-op="${datasetText || ""}">${label}</button>`;
+    function farmNameById(farmId) { return db.farms.find(f => f.farmId === farmId)?.farmName || farmId; }
+    function saveAll() {
+      save(STORAGE.roles, roles);
+      save(STORAGE.accounts, accounts);
+      save(STORAGE.db, db);
+      save(STORAGE.logs, logs);
+      save(STORAGE.drafts, drafts);
+      save(STORAGE.ui, ui);
     }
-
-    function renderAccountOptions() {
-      el.accountSelect.innerHTML = accounts
-        .map((a) => `<option value="${a.id}">${a.displayName} (${a.username})</option>`)
-        .join("");
+    function visibleL1() { return MENUS.filter(m => !m.parent && canViewMenu(m.id)); }
+    function visibleL2(parentId) { return MENUS.filter(m => m.parent === parentId && canViewMenu(m.id)); }
+    function ensureVisibleMenu() {
+      if (!canViewMenu(currentMenu)) {
+        const first = mergedMenus().find(id => MENUS.find(m => m.id === id));
+        currentMenu = first || "dashboard";
+      }
+      const m = MENUS.find(x => x.id === currentMenu);
+      currentL1 = m?.parent || m?.id || "dashboard";
+    }
+    function renderAccountSelect() {
+      el.accountSelect.innerHTML = accounts.map(a => `<option value="${a.id}">${a.displayName}(${a.username})</option>`).join("");
       el.accountSelect.value = currentAccount.id;
     }
-
     function renderIdentity() {
-      const role = accountRole();
-      el.whoami.innerHTML = `
-        <b>${currentAccount.displayName}</b><br>
-        <span class="muted">角色：${role.name}</span><br>
-        <span class="muted">账号：${currentAccount.username}${currentAccount.farmId ? ` | 农场：${currentAccount.farmId}` : ""}</span>
+      const r = role();
+      el.identity.innerHTML = `
+        <div><b>${currentAccount.displayName}</b></div>
+        <div>角色：${r.name}</div>
+        <div>账号：${currentAccount.username}${currentAccount.farmId ? " | 农场:" + currentAccount.farmId : ""}</div>
+        <div>等级：${r.level} | 数据：${r.dataScope}</div>
+        <div style="margin-top:6px;" class="row">
+          <button id="logoutBtn" class="danger">退出登录</button>
+          <span>v1.0.0</span>
+        </div>
       `;
-
-      el.pillLevel.textContent = `权限等级 ${role.level}`;
-      el.pillDataScope.textContent = `数据权限：${role.dataScope}`;
-      el.pillOps.textContent = `操作权限：${role.actions.join("/")}`;
+      document.getElementById("logoutBtn").onclick = () => toast("演示环境：已退出（模拟）");
     }
-
     function renderMenus() {
-      const level1 = MENUS.filter((m) => !m.parent && canViewMenu(m.id));
-      const activeL1 = MENUS.find((m) => m.id === currentMenu)?.parent || currentMenu;
-      el.menuL1.innerHTML = level1
-        .map((m) => `<button class="menu-btn ${activeL1 === m.id ? "active" : ""}" data-menu="${m.id}">${m.name}</button>`)
-        .join("") || "<div class='muted'>无可见菜单</div>";
-
-      const level2 = MENUS.filter((m) => m.parent === activeL1 && canViewMenu(m.id));
-      el.menuL2.innerHTML = level2
-        .map((m) => `<button class="menu-btn ${currentMenu === m.id ? "active" : ""}" data-menu="${m.id}">${m.name}</button>`)
-        .join("") || "<div class='muted'>该一级菜单无可见二级菜单</div>";
+      const l1 = visibleL1();
+      el.menuL1.innerHTML = l1.map(m => `<button class="menu-btn ${currentL1 === m.id ? "active" : ""}" data-menu="${m.id}">${m.name}</button>`).join("") || `<div class="muted">无菜单</div>`;
+      const l2 = visibleL2(currentL1);
+      el.menuL2.innerHTML = l2.map(m => `<button class="menu-btn ${currentMenu === m.id ? "active" : ""}" data-menu="${m.id}">${m.name}</button>`).join("") || `<div class="muted">该模块无二级菜单</div>`;
     }
-
-    function kpiBlock() {
-      const iData = db.incubation.filter((x) => dataAllowed({ module: "incubation", farmId: x.farmId }));
-      const qData = db.quality.filter((x) => dataAllowed({ module: "quality", farmId: x.farmId }));
-      const fData = db.finance.filter((x) => dataAllowed({ module: "finance", farmId: x.farmId }));
-      return `
-        <div class="card panel">
-          <h3>数据看板</h3>
-          <div class="kpi-grid" style="margin-top:8px;">
-            <div class="kpi"><div class="muted">可见农场</div><b>${new Set(iData.map((x) => x.farmId)).size}</b></div>
-            <div class="kpi"><div class="muted">孵化记录</div><b>${iData.length}</b></div>
-            <div class="kpi"><div class="muted">品控记录</div><b>${qData.length}</b></div>
-            <div class="kpi"><div class="muted">费用记录</div><b>${fData.length}</b></div>
+    function renderBreadcrumb() {
+      const m = MENUS.find(x => x.id === currentMenu);
+      const p = m?.parent ? MENUS.find(x => x.id === m.parent) : null;
+      const parts = [
+        `<a data-crumb="dashboard">首页</a>`,
+        p ? `<a data-crumb="${p.id}">${p.name}</a>` : `<span>${m?.name || "模块"}</span>`,
+        p ? `<span>${m?.name || ""}</span>` : ""
+      ].filter(Boolean);
+      el.breadcrumb.innerHTML = parts.join(" → ");
+    }
+    function todoCount() { return db.todos.filter(t => t.status !== "已完成").length; }
+    function renderRightPane() {
+      el.rightPane.classList.toggle("collapsed", !!ui.rightCollapsed);
+      el.toggleRight.textContent = ui.rightCollapsed ? "展开" : "折叠";
+      el.rightExpandHandle.classList.toggle("show", !!ui.rightCollapsed);
+      const syncRows = db.syncStatus.map(s => `<tr><td>${s.side}</td><td>${s.freq}</td><td>${s.last}</td><td>${s.ok ? `<span class="tag ok">正常</span>` : `<span class="tag err">异常</span>`}</td></tr>`).join("");
+      const warns = db.warnings.map(w => `<tr><td>${w.type}</td><td>${w.farmId}</td><td>${w.status}</td></tr>`).join("");
+      const todoRows = db.todos.filter(t => t.status !== "已完成").slice(0, 6).map(t => `<li>${t.text} <span class="tag ${t.priority === "高" ? "warn" : ""}">${t.priority}</span></li>`).join("");
+      el.rightContent.innerHTML = `
+        <div class="card">
+          <div class="card-head"><h3><span class="lamp"></span>待办任务</h3></div>
+          <div class="card-body"><ol style="margin:0;padding-left:18px;">${todoRows || `<span class="muted">暂无待办</span>`}</ol></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3><span class="lamp"></span>多端同步状态</h3></div>
+          <div class="card-body table-wrap">
+            <table><thead><tr><th>端</th><th>频率</th><th>最近同步</th><th>状态</th></tr></thead><tbody>${syncRows}</tbody></table>
+            <div class="panel-note" style="margin-top:8px;">同步异常会推送预警给管理员（演示逻辑）。</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3><span class="lamp"></span>风险预警</h3></div>
+          <div class="card-body table-wrap">
+            <table><thead><tr><th>类型</th><th>农场</th><th>状态</th></tr></thead><tbody>${warns || `<tr><td colspan="3" class="muted">无</td></tr>`}</tbody></table>
           </div>
         </div>
       `;
+      el.todoCount.textContent = String(todoCount());
+    }
+    function filteredFarms() { return db.farms.filter(f => dataAllowed("dashboard", f.farmId)); }
+    function dashboardCards() {
+      const farms = filteredFarms();
+      const coreCount = farms.filter(f => f.core).length;
+      const qcRate = farms.length ? Math.round(farms.filter(f => f.qcScore >= 80).length / farms.length * 100) : 0;
+      const visitor = farms.reduce((s, x) => s + x.visitor, 0);
+      const revenue = farms.reduce((s, x) => s + x.revenue7d, 0);
+      const liveTotal = db.liveReport.reduce((s, x) => s + x.orders, 0);
+      return [
+        { label: "入驻农场总数", value: farms.length },
+        { label: "核心农场数", value: coreCount },
+        { label: "品控整体达标率", value: qcRate + "%" },
+        { label: "实时客流", value: visitor },
+        { label: "全域农产营收(7天)", value: revenue },
+        { label: "直播成交额(模拟)", value: liveTotal * 69 }
+      ];
     }
 
-    function renderOverview() {
-      const role = accountRole();
-      el.pageTitle.textContent = "运营总览";
-      el.pageDesc.textContent = "菜单权限 + 操作权限 + 数据权限实时生效";
-      const hints = [
-        "菜单权限：仅显示当前角色可见菜单",
-        "操作权限：按钮按 view/edit/delete/audit/config/submit 开关",
-        "数据权限：全域、部门相关、品控全域、自身农场"
-      ];
-      el.main.innerHTML = `${kpiBlock()}<div class="card panel"><h3>当前规则</h3><div style="margin-top:8px;">${hints.map((x) => `<span class="pill">${x}</span>`).join("")}</div><p class="muted" style="margin-top:10px;">当前角色：${role.name}</p></div>`;
+        function drawDashboardVisuals(farms) {
+      const c1 = document.getElementById("visitorTrendChart");
+      const c2 = document.getElementById("revenueTrendChart");
+      if (!c1 || !c2) return;
+
+      const drawLine = (canvas, data, color, label) => {
+        const ctx = canvas.getContext("2d");
+        const w = canvas.width = canvas.clientWidth;
+        const h = canvas.height = canvas.clientHeight;
+        ctx.clearRect(0, 0, w, h);
+
+        ctx.strokeStyle = "#d8e1f2";
+        ctx.lineWidth = 1;
+        for (let i = 0; i < 5; i++) {
+          const y = 18 + i * ((h - 36) / 4);
+          ctx.beginPath();
+          ctx.moveTo(34, y);
+          ctx.lineTo(w - 10, y);
+          ctx.stroke();
+        }
+
+        const max = Math.max(...data, 1);
+        const min = Math.min(...data, 0);
+        const dx = (w - 50) / (data.length - 1 || 1);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        data.forEach((v, i) => {
+          const x = 34 + i * dx;
+          const y = 18 + (h - 36) * (1 - (v - min) / ((max - min) || 1));
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+
+        ctx.fillStyle = color;
+        data.forEach((v, i) => {
+          const x = 34 + i * dx;
+          const y = 18 + (h - 36) * (1 - (v - min) / ((max - min) || 1));
+          ctx.beginPath();
+          ctx.arc(x, y, 3, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        ctx.fillStyle = "#66768a";
+        ctx.font = "12px Microsoft YaHei";
+        ctx.fillText(label, 10, 12);
+      };
+
+      const baseVisitor = farms.reduce((s, f) => s + f.visitor, 0) || 100;
+      const baseRevenue = farms.reduce((s, f) => s + f.revenue7d, 0) || 1000;
+      const ratio = [0.72, 0.78, 0.83, 0.88, 0.92, 0.97, 1.0];
+      drawLine(c1, ratio.map(r => Math.round(baseVisitor * r)), "#1E50B3", "近7天客流趋势");
+      drawLine(c2, ratio.map(r => Math.round(baseRevenue * r)), "#D82E2F", "近7天营收趋势");
     }
+
+    function renderDashboard() {
+      const cards = dashboardCards();
+      const farms = filteredFarms();
+      const top3 = [...farms].sort((a, b) => b.revenue7d - a.revenue7d).slice(0, 3);
+      const warnRows = db.warnings.map(w => `<tr><td>${w.type}</td><td>${farmNameById(w.farmId)}</td><td>${w.status}</td><td>${actionBtn("处理", "audit", "ok", `data-act="warn-handle" data-id="${w.id}"`)}</td></tr>`).join("");
+      const todoRows = db.todos.map(t => `<tr><td>${t.priority}</td><td>${t.text}</td><td>${t.status}</td><td>${actionBtn("一键处理", "audit", "", `data-act="todo-done" data-id="${t.id}"`)}</td></tr>`).join("");
+
+      const slot = [{ x: 170, y: 120 }, { x: 330, y: 190 }, { x: 505, y: 260 }, { x: 430, y: 108 }, { x: 250, y: 260 }];
+      const colorByStatus = (s) => s === "正常运营" ? "#39B54A" : s === "试运营" ? "#1E50B3" : s === "需整改" ? "#D82E2F" : "#8f99aa";
+      const mapMarks = farms.map((f, i) => {
+        const pt = slot[i % slot.length];
+        return `<g class="map-farm" data-farm="${f.farmId}" transform="translate(${pt.x},${pt.y})"><circle r="8" fill="${colorByStatus(f.status)}"></circle><text x="12" y="4">${f.farmId}</text></g>`;
+      }).join("");
+
+      const aiGuideRows = farms.map((f) => {
+        const riskScore = Math.max(5, Math.min(95, 100 - f.qcScore + Math.round((1000 - Math.min(f.visitor, 1000)) / 50)));
+        const level = riskScore > 70 ? "高" : riskScore > 40 ? "中" : "低";
+        const action = riskScore > 70 ? "立即整改+流量扶持" : riskScore > 40 ? "重点跟踪+抽检加密" : "保持节奏";
+        const cls = level === "高" ? "warn" : level === "中" ? "" : "ok";
+        return `<tr><td>${f.farmName}</td><td><span class="tag ${cls}">${level}</span></td><td>${riskScore}%</td><td>${action}</td></tr>`;
+      }).join("");
+
+      el.main.innerHTML = `
+        <div class="card dashboard-overview">
+          <div class="card-head between">
+            <h3><span class="lamp"></span>全域核心数据总览</h3>
+            <div class="row dashboard-overview-toolbar">
+              <span class="muted">刷新频率(分钟)</span>
+              <input id="refreshMinutes" type="number" min="1" value="${db.settings.refreshMinutes || 5}" />
+              ${actionBtn("保存频率", "config", "", `id="saveRefresh"`)}
+            </div>
+          </div>
+          <div class="card-body grid g6 dashboard-overview-body">${cards.map((c,idx) => { const trend = [12,8,6,15,11,18][idx] || 5; return `<div class="kpi kpi-pro"><div class="kpi-top"><div class="muted">${c.label}</div><span class="kpi-chip up">+${trend}%</span></div><div class="v">${c.value}</div><div class="kpi-foot"><i style="width:${58 + idx * 7}%"></i></div></div>`; }).join("")}</div>
+        </div>
+
+        <div class="grid g3">
+          <div class="card">
+            <div class="card-head"><h3><span class="lamp"></span>农场虚拟地图</h3></div>
+            <div class="card-body">
+              <svg class="vmap" viewBox="0 0 640 360" preserveAspectRatio="xMidYMid meet">
+                <rect x="16" y="16" width="608" height="328" rx="14" fill="#f8fbff" stroke="#dbe6f7"></rect>
+                <path d="M40 275 C150 180, 240 300, 360 230 C470 170, 550 220, 610 165" fill="none" stroke="#b8d0f3" stroke-width="4"></path>
+                <path d="M80 95 C220 45, 390 62, 560 130" fill="none" stroke="#d7e7fb" stroke-width="3"></path>
+                <text x="28" y="40">连平县忠信镇·虚拟示意图</text>
+                ${mapMarks}
+              </svg>
+              <div class="muted" style="margin-top:6px;">点击农场点位可查看状态与风险建议</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h3><span class="lamp"></span>客流与消费趋势图表</h3></div>
+            <div class="card-body">
+              <canvas id="visitorTrendChart" class="mini-chart"></canvas>
+              <canvas id="revenueTrendChart" class="mini-chart" style="margin-top:8px;"></canvas>
+              <div class="muted">农产销售TOP3：${top3.map(x => x.farmName).join(" / ") || "无"}</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h3><span class="lamp"></span>AI智能推荐与风险指导</h3></div>
+            <div class="card-body">
+              <div class="ops" style="margin-bottom:8px;">${actionBtn("AI一键生成", "audit", "primary", `id="aiGenBtn"`)}${actionBtn("应用到待办", "audit", "ok", `id="aiApplyBtn"`)}${actionBtn("生成风险预警", "audit", "", `id="aiRiskBtn"`)}</div>
+              <ul style="margin:0;padding-left:18px;">${db.aiRecommend.map(x => `<li>${x}</li>`).join("")}</ul>
+              <div class="table-wrap" style="margin-top:8px;">
+                <table><thead><tr><th>农场</th><th>风险级别</th><th>AI置信度</th><th>建议动作</th></tr></thead><tbody>${aiGuideRows}</tbody></table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid g2"> 
+          <div class="card table-wrap">
+            <div class="card-head"><h3><span class="lamp"></span>风险预警面板</h3></div>
+            <div class="card-body"><table><thead><tr><th>类型</th><th>农场</th><th>状态</th><th>入口</th></tr></thead><tbody>${warnRows || `<tr><td colspan="4" class="muted">无预警</td></tr>`}</tbody></table></div>
+          </div>
+          <div class="card table-wrap">
+            <div class="card-head"><h3><span class="lamp"></span>待办任务中心</h3></div>
+            <div class="card-body"><table><thead><tr><th>优先级</th><th>任务</th><th>状态</th><th>入口</th></tr></thead><tbody>${todoRows || `<tr><td colspan="4" class="muted">无待办</td></tr>`}</tbody></table></div>
+          </div>
+        </div>
+      `;
+
+      drawDashboardVisuals(farms);
+      document.querySelectorAll('.map-farm').forEach((node) => {
+        node.addEventListener('click', () => {
+          const farmId = node.getAttribute('data-farm');
+          const farm = farms.find(f => f.farmId === farmId);
+          if (!farm) return;
+          toast(`${farm.farmName}：状态${farm.status}，品控${farm.qcScore}分，7天营收${farm.revenue7d}`);
+        });
+      });
+
+      const saveBtn = document.getElementById("saveRefresh");
+      if (saveBtn) {
+        saveBtn.onclick = () => {
+          if (!can("config")) return;
+          const n = Number(document.getElementById("refreshMinutes").value || 5);
+          db.settings.refreshMinutes = Math.max(1, n);
+          saveAll();
+          setupAutoRefresh();
+          log("保存刷新频率", `refresh=${db.settings.refreshMinutes}`);
+          toast("已保存刷新频率");
+        };
+      }
+
+      const aiGenBtn = document.getElementById("aiGenBtn");
+      if (aiGenBtn) aiGenBtn.onclick = () => {
+        db.aiRecommend.unshift(`AI策略 ${nowStr().slice(11,16)}：优先扶持${farms[0]?.farmName || "核心农场"}直播转化`);
+        db.aiRecommend = db.aiRecommend.slice(0, 6);
+        saveAll();
+        log("AI一键生成建议", "dashboard");
+        renderAll();
+      };
+
+      const aiApplyBtn = document.getElementById("aiApplyBtn");
+      if (aiApplyBtn) aiApplyBtn.onclick = () => {
+        const txt = db.aiRecommend[0] || "AI建议";
+        db.todos.unshift({ id: uid("T"), text: `执行：${txt}`, priority: "中", status: "待处理", menu: "dashboard" });
+        saveAll();
+        log("AI建议应用到待办", txt);
+        toast("AI建议已加入待办");
+        renderRightPane();
+      };
+
+      const aiRiskBtn = document.getElementById("aiRiskBtn");
+      if (aiRiskBtn) aiRiskBtn.onclick = () => {
+        const target = farms.sort((a,b)=>a.qcScore-b.qcScore)[0];
+        if (!target) return;
+        db.warnings.unshift({ id: uid("W"), type: "AI预警：品控波动", farmId: target.farmId, status: "待处理" });
+        db.warnings = db.warnings.slice(0, 40);
+        saveAll();
+        log("AI生成风险预警", target.farmId);
+        toast(`已生成 ${target.farmName} 风险预警`);
+        renderAll();
+      };
+    }
+function filteredByFarm(rows, module, key = "farmId") { return rows.filter(r => dataAllowed(module, r[key])); }
 
     function renderIncubation() {
-      el.pageTitle.textContent = "孵化管理";
-      el.pageDesc.textContent = "含孵化进度、AI孵化方案复核";
-      const rows = db.incubation.filter((x) => dataAllowed({ module: "incubation", farmId: x.farmId }));
-      const facilityRows = db.facilityApply.filter((x) => dataAllowed({ module: "incubation", farmId: x.farmId }));
-      const allowSubmit = can("submit");
+      const applyRows = filteredByFarm(db.incubationApply, "incubation");
+      const progressRows = filteredByFarm(db.incubationProgress, "incubation");
+      const assessRows = filteredByFarm(db.assessments, "incubation");
+      const stageOptions = stageNames.map((s, i) => `<option value="${i+1}">${i+1}. ${s}</option>`).join("");
+      const draft = drafts.incFeedback || "";
       el.main.innerHTML = `
-        ${kpiBlock()}
-        <div class="card panel table-wrap">
-          <div class="row wrap" style="justify-content:space-between;margin-bottom:8px;">
-            <h3>孵化进度</h3>
-            <div class="ops">
-              ${actionBtn("新增记录", "edit", "")}
-              ${actionBtn("批量审核", "audit", "")}
-              ${actionBtn("删除选中", "delete", "danger")}
+        <div class="grid g2">
+          <div class="card table-wrap">
+            <div class="card-head between">
+              <h3><span class="lamp"></span>入驻申请管理</h3>
+              <div class="ops">
+                ${actionBtn("AI初筛", "audit", "", `id="aiScreen"`)}
+                ${actionBtn("批量通过", "audit", "ok", `id="batchApproveApply"`)}
+                ${actionBtn("批量驳回", "audit", "danger", `id="batchRejectApply"`)}
+              </div>
+            </div>
+            <div class="card-body">
+              <table><thead><tr><th><input type="checkbox" id="allApply"></th><th>申请ID</th><th>农场</th><th>农场主</th><th>时间</th><th>状态</th><th>操作</th></tr></thead>
+              <tbody>
+                ${applyRows.map(r => `<tr>
+                  <td><input type="checkbox" class="applyCheck" value="${r.id}"></td>
+                  <td>${r.id}</td><td>${r.farmName}</td><td>${r.owner}</td><td>${r.time}</td><td>${r.status}</td>
+                  <td class="ops">${actionBtn("方案复核", "audit", "", `data-act="apply-review" data-id="${r.id}"`)}${actionBtn("签约", "edit", "", `data-act="apply-sign" data-id="${r.id}"`)}</td>
+                </tr>`).join("") || `<tr><td colspan="7" class="muted">无数据</td></tr>`}
+              </tbody></table>
             </div>
           </div>
-          <table>
-            <thead><tr><th>农场</th><th>阶段</th><th>进度</th><th>AI方案</th><th>操作</th></tr></thead>
-            <tbody>
-              ${rows.map((r) => `<tr><td>${r.farmId}</td><td>${r.stage}</td><td>${r.progress}</td><td>${r.aiPlan}</td><td class="ops">${actionBtn("查看", "view", "")}${actionBtn("编辑", "edit", "")}${actionBtn("复核", "audit", "")}</td></tr>`).join("") || `<tr><td colspan='5' class='muted'>无可见数据</td></tr>`}
-            </tbody>
-          </table>
+          <div class="card">
+            <div class="card-head"><h3><span class="lamp"></span>协议在线编辑/电子签名</h3></div>
+            <div class="card-body">
+              <textarea id="agreementText" rows="6" placeholder="可编辑协议内容，点击签名确认。">甲方：客乡汇总部\n乙方：农场主\n服务内容：孵化赋能...</textarea>
+              <div class="row" style="margin-top:8px;">
+                <input id="signName" placeholder="签名人" />
+                ${actionBtn("电子签名", "audit", "ok", `id="signAgreement"`)}
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="grid-2">
-          <div class="card panel">
-            <h3>设施预约申请</h3>
-            <div class="row" style="margin-top:8px;">
-              <input id="facilityName" placeholder="设施名称（如 冷链库）" ${allowSubmit ? "" : "disabled"} />
-              <button class="primary" id="submitFacility" ${allowSubmit ? "" : "disabled"}>提交预约</button>
-            </div>
-            <div class="table-wrap" style="margin-top:8px;">
-              <table>
-                <thead><tr><th>单号</th><th>农场</th><th>设施</th><th>状态</th></tr></thead>
-                <tbody>
-                  ${facilityRows.map((r) => `<tr><td>${r.id}</td><td>${r.farmId}</td><td>${r.facility}</td><td>${r.status}</td></tr>`).join("") || `<tr><td colspan='4' class='muted'>无可见数据</td></tr>`}
-                </tbody>
-              </table>
+        <div class="card table-wrap">
+          <div class="card-head between">
+            <h3><span class="lamp"></span>孵化进度跟踪（7步SOP）</h3>
+            <div class="ops">
+              ${actionBtn("派发任务", "edit", "", `id="dispatchTask"`)}
+              ${actionBtn("批量审核附件", "audit", "", `id="batchAuditAttach"`)}
             </div>
           </div>
-          <div class="card panel">
-            <h3>孵化任务进度反馈</h3>
-            <textarea id="progressFeedback" placeholder="填写本农场孵化任务进度反馈..." ${allowSubmit ? "" : "disabled"}></textarea>
-            <button class="primary" id="submitProgress" style="margin-top:8px;" ${allowSubmit ? "" : "disabled"}>提交反馈</button>
+          <div class="card-body">
+            <table><thead><tr><th>农场</th><th>当前阶段</th><th>进度</th><th>负责人</th><th>时限</th><th>附件</th><th>操作</th></tr></thead><tbody>
+              ${progressRows.map(r => `<tr><td>${r.farmId}</td><td>${stageNames[r.stage-1]}</td><td><div class="bar"><i style="width:${Math.round(r.stage/7*100)}%"></i></div></td><td>${r.owner}</td><td>${r.due}</td><td>${r.attachmentCount}</td><td class="ops">${actionBtn("上传附件", "submit", "", `data-act="upload-progress" data-id="${r.farmId}"`)}${actionBtn("推进下一阶段", "audit", "ok", `data-act="next-stage" data-id="${r.farmId}"`)}</td></tr>`).join("") || `<tr><td colspan="7" class="muted">无数据</td></tr>`}
+            </tbody></table>
+            <div class="row" style="margin-top:8px;">
+              <select id="manualStageFarm">${progressRows.map(x => `<option value="${x.farmId}">${x.farmId}</option>`).join("")}</select>
+              <select id="manualStage">${stageOptions}</select>
+              ${actionBtn("设置阶段", "audit", "", `id="setStage"`)}
+            </div>
+            <div class="row" style="margin-top:8px;"><textarea id="incFeedback" rows="3" placeholder="孵化任务进度反馈（支持草稿）">${draft}</textarea></div>
+            <div class="row" style="margin-top:8px;">
+              ${actionBtn("保存草稿", "submit", "", `id="saveIncDraft"`)}
+              ${actionBtn("提交反馈", "submit", "primary", `id="submitIncFeedback"`)}
+              <button id="resetIncFeedback" class="danger">重置</button>
+            </div>
+          </div>
+        </div>
+        <div class="grid g2">
+          <div class="card table-wrap">
+            <div class="card-head between"><h3><span class="lamp"></span>阶段性考核</h3>${actionBtn("导出考核", "export", "", `id="exportAssess"`)}</div>
+            <div class="card-body">
+              <table><thead><tr><th>ID</th><th>农场</th><th>品控60%</th><th>文化20%</th><th>营收20%</th><th>总分</th><th>结果</th></tr></thead><tbody>
+                ${assessRows.map(a => `<tr><td>${a.id}</td><td>${a.farmId}</td><td>${a.qc}</td><td>${a.culture}</td><td>${a.growth}</td><td>${a.score}</td><td>${a.result}</td></tr>`).join("") || `<tr><td colspan="7" class="muted">无数据</td></tr>`}
+              </tbody></table>
+              <div class="row" style="margin-top:8px;">
+                <select id="assessFarm">${db.farms.map(f => `<option value="${f.farmId}">${f.farmId}</option>`).join("")}</select>
+                <input id="assessQc" placeholder="品控分" type="number" min="0" max="100" />
+                <input id="assessCulture" placeholder="文化分" type="number" min="0" max="100" />
+                <input id="assessGrowth" placeholder="营收分" type="number" min="0" max="100" />
+                ${actionBtn("生成考核", "audit", "ok", `id="calcAssess"`)}
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3><span class="lamp"></span>同质化规避配置</h3></div>
+            <div class="card-body">
+              <div class="row">
+                <input id="limitTrackA" type="number" value="${db.diffRules.tracks["种养型"]}" />
+                <input id="limitTrackB" type="number" value="${db.diffRules.tracks["体验型"]}" />
+                <input id="limitTrackC" type="number" value="${db.diffRules.tracks["农家乐型"]}" />
+                <input id="radiusKm" type="number" value="${db.diffRules.radiusKm}" />
+              </div>
+              <div class="muted" style="margin-top:8px;">顺序：种养型上限 / 体验型上限 / 农家乐型上限 / 半径km</div>
+              <div class="panel-note" style="margin-top:8px;">自动提示：3公里范围内同赛道农场将触发预警（演示逻辑）。</div>
+              <div style="margin-top:8px;" class="ops">
+                ${actionBtn("保存配置", "config", "primary", `id="saveDiffRule"`)}
+                ${actionBtn("查看3公里冲突", "view", "", `id="scanConflict"`)}
+              </div>
+            </div>
           </div>
         </div>
       `;
-
-      const submitFacility = document.getElementById("submitFacility");
-      if (submitFacility) {
-        submitFacility.onclick = () => {
-          if (!can("submit")) return;
-          const facilityInput = document.getElementById("facilityName");
-          const facility = facilityInput.value.trim();
-          if (!facility) return alert("请输入设施名称");
-          const id = `R${String(Date.now()).slice(-4)}`;
-          const farmId = currentAccount.farmId || db.farms[0].farmId;
-          db.facilityApply.unshift({ id, farmId, facility, status: "待审核" });
-          save(STORAGE.data, db);
-          renderByMenu(currentMenu);
-        };
-      }
-
-      const submitProgress = document.getElementById("submitProgress");
-      if (submitProgress) {
-        submitProgress.onclick = () => {
-          if (!can("submit")) return;
-          const text = document.getElementById("progressFeedback").value.trim();
-          if (!text) return alert("请输入反馈内容");
-          alert("孵化任务进度反馈已提交");
-        };
-      }
+      const allApply = document.getElementById("allApply");
+      if (allApply) allApply.onchange = () => document.querySelectorAll(".applyCheck").forEach(c => c.checked = allApply.checked);
+      const pickApply = () => Array.from(document.querySelectorAll(".applyCheck:checked")).map(x => x.value);
+      const batchOp = (status) => {
+        const ids = pickApply();
+        if (!ids.length) return toast("请先勾选申请");
+        confirmThen(`确认批量${status} ${ids.length} 条申请？`, () => {
+          db.incubationApply.forEach(x => { if (ids.includes(x.id)) x.status = status; });
+          log("批量处理入驻申请", `${status}:${ids.join(",")}`);
+          saveAll();
+          renderAll();
+        });
+      };
+      const btnApprove = document.getElementById("batchApproveApply");
+      if (btnApprove) btnApprove.onclick = () => batchOp("已通过");
+      const btnReject = document.getElementById("batchRejectApply");
+      if (btnReject) btnReject.onclick = () => batchOp("已驳回");
+      const aiScreen = document.getElementById("aiScreen");
+      if (aiScreen) aiScreen.onclick = () => {
+        db.incubationApply.forEach(a => { if (a.status === "待审核") a.aiPlan = "AI推荐：体验型+直播导流"; });
+        saveAll(); log("AI初筛", "incubation apply"); toast("AI初筛完成"); renderAll();
+      };
+      document.querySelectorAll("[data-act='apply-review']").forEach(btn => btn.onclick = () => {
+        const id = btn.dataset.id;
+        const item = db.incubationApply.find(x => x.id === id);
+        if (!item) return;
+        item.status = "方案复核中";
+        saveAll(); log("方案复核", id); toast("已进入复核"); renderAll();
+      });
+      document.querySelectorAll("[data-act='apply-sign']").forEach(btn => btn.onclick = () => toast("请在右侧协议区签名"));
+      const sign = document.getElementById("signAgreement");
+      if (sign) sign.onclick = () => {
+        const n = document.getElementById("signName").value.trim();
+        if (!n) return toast("请输入签名人");
+        log("电子签名", n); toast("电子签名已记录");
+      };
+      const setStage = document.getElementById("setStage");
+      if (setStage) setStage.onclick = () => {
+        const farmId = document.getElementById("manualStageFarm").value;
+        const stage = Number(document.getElementById("manualStage").value);
+        const r = db.incubationProgress.find(x => x.farmId === farmId);
+        if (!r) return;
+        r.stage = stage; r.finished = `已完成 ${stage}/7`;
+        saveAll(); log("设置孵化阶段", `${farmId}:${stage}`); renderAll();
+      };
+      document.querySelectorAll("[data-act='next-stage']").forEach(btn => btn.onclick = () => {
+        const row = db.incubationProgress.find(x => x.farmId === btn.dataset.id);
+        if (!row) return;
+        row.stage = Math.min(7, row.stage + 1); row.finished = `已完成 ${row.stage}/7`;
+        saveAll(); log("推进阶段", `${row.farmId}:${row.stage}`); renderAll();
+      });
+      document.querySelectorAll("[data-act='upload-progress']").forEach(btn => btn.onclick = () => {
+        const row = db.incubationProgress.find(x => x.farmId === btn.dataset.id);
+        if (!row) return;
+        row.attachmentCount += 1; saveAll(); log("上传进度附件", row.farmId); toast("已上传附件(模拟)"); renderAll();
+      });
+      const saveDraft = document.getElementById("saveIncDraft");
+      if (saveDraft) saveDraft.onclick = () => {
+        drafts.incFeedback = document.getElementById("incFeedback").value;
+        save(STORAGE.drafts, drafts); toast("草稿已保存");
+      };
+      const submitInc = document.getElementById("submitIncFeedback");
+      if (submitInc) submitInc.onclick = () => {
+        const text = document.getElementById("incFeedback").value.trim();
+        if (!text) return toast("请填写反馈");
+        drafts.incFeedback = ""; save(STORAGE.drafts, drafts);
+        log("提交孵化反馈", text.slice(0, 20)); toast("反馈已提交"); renderAll();
+      };
+      const resetInc = document.getElementById("resetIncFeedback");
+      if (resetInc) resetInc.onclick = () => {
+        document.getElementById("incFeedback").value = "";
+        drafts.incFeedback = "";
+        save(STORAGE.drafts, drafts);
+      };
+      const calc = document.getElementById("calcAssess");
+      if (calc) calc.onclick = () => {
+        const farmId = document.getElementById("assessFarm").value;
+        const qc = Number(document.getElementById("assessQc").value);
+        const culture = Number(document.getElementById("assessCulture").value);
+        const growth = Number(document.getElementById("assessGrowth").value);
+        if ([qc, culture, growth].some(x => Number.isNaN(x) || x < 0 || x > 100)) return toast("评分需为0-100");
+        const score = +(qc * 0.6 + culture * 0.2 + growth * 0.2).toFixed(1);
+        const result = score >= 85 ? "毕业" : score >= 70 ? "续孵" : "清退";
+        db.assessments.unshift({ id: uid("AS"), farmId, qc, culture, growth, score, result });
+        const f = db.farms.find(x => x.farmId === farmId);
+        if (f && result === "毕业") f.core = true;
+        saveAll(); log("生成考核", `${farmId}:${score}`); renderAll();
+      };
+      const saveDiff = document.getElementById("saveDiffRule");
+      if (saveDiff) saveDiff.onclick = () => {
+        db.diffRules.tracks["种养型"] = Number(document.getElementById("limitTrackA").value || 0);
+        db.diffRules.tracks["体验型"] = Number(document.getElementById("limitTrackB").value || 0);
+        db.diffRules.tracks["农家乐型"] = Number(document.getElementById("limitTrackC").value || 0);
+        db.diffRules.radiusKm = Number(document.getElementById("radiusKm").value || 3);
+        saveAll(); log("保存同质化规则", JSON.stringify(db.diffRules)); toast("配置已保存");
+      };
+      const scan = document.getElementById("scanConflict");
+      if (scan) scan.onclick = () => {
+        const byTrack = db.farms.reduce((acc, f) => { acc[f.track] = (acc[f.track] || 0) + 1; return acc; }, {});
+        const conflicts = Object.entries(byTrack).filter(([k, v]) => v > (db.diffRules.tracks[k] || 0)).map(([k]) => k);
+        toast(conflicts.length ? `冲突赛道：${conflicts.join("/")}` : "未发现赛道超限");
+      };
     }
 
     function renderQuality() {
-      el.pageTitle.textContent = "品控溯源管理";
-      el.pageDesc.textContent = "品控标准制定、抽检审核、AI方案复核、报告生成";
       const standards = db.qualityStandards;
-      const qRows = db.quality.filter((x) => dataAllowed({ module: "quality", farmId: x.farmId }));
-
+      const sample = filteredByFarm(db.sampling, "quality");
+      const traceRows = filteredByFarm(db.traceCodes, "quality");
+      const antiRows = filteredByFarm(db.antiFake, "quality");
       el.main.innerHTML = `
-        <div class="grid-2">
-          <div class="card panel table-wrap">
-            <div class="row wrap" style="justify-content:space-between;margin-bottom:8px;">
-              <h3>标准制定</h3>
-              <div class="ops">${actionBtn("新增标准", "edit", "")}${actionBtn("删除标准", "delete", "danger")}</div>
+        <div class="grid g2">
+          <div class="card table-wrap">
+            <div class="card-head between"><h3><span class="lamp"></span>品控标准管理</h3><div class="ops">${actionBtn("发布标准", "audit", "ok", `id="publishStandard"`)}${actionBtn("下载文档", "export", "", `id="downloadStandard"`)}</div></div>
+            <div class="card-body">
+              <table><thead><tr><th>ID</th><th>标准名</th><th>档位</th><th>版本</th><th>负责人</th><th>操作</th></tr></thead><tbody>
+                ${standards.map(s => `<tr><td>${s.id}</td><td>${s.name}</td><td>${s.level}</td><td>${s.version}</td><td>${s.owner}</td><td class="ops">${actionBtn("编辑", "edit", "", `data-act="edit-standard" data-id="${s.id}"`)}</td></tr>`).join("")}
+              </tbody></table>
+              <div class="row" style="margin-top:8px;">
+                <input id="stdName" placeholder="新增标准名称" />
+                <select id="stdLevel"><option>高档</option><option>中档</option><option>普档</option></select>
+                ${actionBtn("新增标准", "edit", "primary", `id="addStandard"`)}
+              </div>
             </div>
-            <table><thead><tr><th>ID</th><th>标准名</th><th>版本</th><th>操作</th></tr></thead><tbody>
-              ${standards.map((s) => `<tr><td>${s.id}</td><td>${s.name}</td><td>${s.version}</td><td class="ops">${actionBtn("查看", "view", "")}${actionBtn("编辑", "edit", "")}</td></tr>`).join("")}
-            </tbody></table>
           </div>
-          <div class="card panel table-wrap">
-            <div class="row wrap" style="justify-content:space-between;margin-bottom:8px;">
-              <h3>抽检审核</h3>
-              <div class="ops">${actionBtn("生成报告", "audit", "")}${actionBtn("导出", "view", "")}</div>
+          <div class="card table-wrap">
+            <div class="card-head between"><h3><span class="lamp"></span>抽检执行管理</h3><div class="ops">${actionBtn("自动生成计划", "audit", "", `id="genSampling"`)}${actionBtn("批量审核", "audit", "ok", `id="batchSampling"`)}</div></div>
+            <div class="card-body">
+              <table><thead><tr><th><input type="checkbox" id="allSampling"></th><th>ID</th><th>农场</th><th>档位</th><th>周期</th><th>计划时间</th><th>结果</th><th>状态</th></tr></thead><tbody>
+                ${sample.map(s => `<tr><td><input type="checkbox" class="samplingCheck" value="${s.id}"></td><td>${s.id}</td><td>${s.farmId}</td><td>${s.grade}</td><td>${s.cycle}</td><td>${s.planAt}</td><td>${s.result}</td><td>${s.status}</td></tr>`).join("") || `<tr><td colspan="8" class="muted">无数据</td></tr>`}
+              </tbody></table>
             </div>
-            <table><thead><tr><th>批次</th><th>农场</th><th>结果</th><th>状态</th><th>操作</th></tr></thead><tbody>
-              ${qRows.map((r) => `<tr><td>${r.batch}</td><td>${r.farmId}</td><td>${r.sampleResult}</td><td><span class='tag ${r.status === "已通过" ? "ok" : "warn"}'>${r.status}</span></td><td class='ops'>${actionBtn("审核", "audit", "")}${actionBtn("编辑", "edit", "")}</td></tr>`).join("") || `<tr><td colspan='5' class='muted'>无可见数据</td></tr>`}
-            </tbody></table>
+          </div>
+        </div>
+        <div class="grid g2">
+          <div class="card table-wrap">
+            <div class="card-head between"><h3><span class="lamp"></span>溯源码管理</h3><div class="ops">${actionBtn("批量生成", "edit", "", `id="genTrace"`)}${actionBtn("打印", "export", "", `id="printTrace"`)}${actionBtn("导出", "export", "", `id="exportTrace"`)}</div></div>
+            <div class="card-body">
+              <table><thead><tr><th>ID</th><th>批次</th><th>农场</th><th>等级</th><th>权益</th><th>状态</th></tr></thead><tbody>
+                ${traceRows.map(t => `<tr><td>${t.id}</td><td>${t.batch}</td><td>${t.farmId}</td><td>${t.level}</td><td>${t.perks}</td><td>${t.status}</td></tr>`).join("") || `<tr><td colspan="6" class="muted">无数据</td></tr>`}
+              </tbody></table>
+              <div class="row" style="margin-top:8px;"><input id="traceBatch" placeholder="批次号" /><select id="traceFarm">${db.farms.map(f => `<option value="${f.farmId}">${f.farmId}</option>`).join("")}</select>${actionBtn("单条生成", "edit", "primary", `id="addTrace"`)}</div>
+            </div>
+          </div>
+          <div class="card table-wrap">
+            <div class="card-head"><h3><span class="lamp"></span>防伪保障管理</h3></div>
+            <div class="card-body">
+              <table><thead><tr><th>ID</th><th>产品</th><th>火印</th><th>农场</th><th>照片</th><th>状态</th><th>操作</th></tr></thead><tbody>
+                ${antiRows.map(a => `<tr><td>${a.id}</td><td>${a.product}</td><td>${a.fireSeal}</td><td>${a.farmId}</td><td>${a.photo}</td><td>${a.status}</td><td>${actionBtn("核验", "audit", "ok", `data-act="verify-anti" data-id="${a.id}"`)}</td></tr>`).join("") || `<tr><td colspan="7" class="muted">无数据</td></tr>`}
+              </tbody></table>
+            </div>
           </div>
         </div>
       `;
+      const all = document.getElementById("allSampling");
+      if (all) all.onchange = () => document.querySelectorAll(".samplingCheck").forEach(c => c.checked = all.checked);
+      const addStd = document.getElementById("addStandard");
+      if (addStd) addStd.onclick = () => {
+        const name = document.getElementById("stdName").value.trim();
+        const level = document.getElementById("stdLevel").value;
+        if (!name) return toast("请输入标准名称");
+        db.qualityStandards.unshift({ id: uid("QS"), name, level, version: "v1.0", owner: "委员会" });
+        saveAll(); log("新增品控标准", name); renderAll();
+      };
+      const gen = document.getElementById("genSampling");
+      if (gen) gen.onclick = () => {
+        const cycleByGrade = { "高档": "每月2次", "中档": "每月1次", "普档": "每2月1次" };
+        db.farms.forEach((f, idx) => {
+          const grade = f.core ? "高档" : (f.qcScore >= 80 ? "中档" : "普档");
+          db.sampling.unshift({ id: uid("SP"), farmId: f.farmId, grade, cycle: cycleByGrade[grade], planAt: `2026-03-${String(10+idx).padStart(2,"0")}`, result: "待检", status: "待执行" });
+        });
+        saveAll(); log("生成抽检计划", "auto"); renderAll();
+      };
+      const batch = document.getElementById("batchSampling");
+      if (batch) batch.onclick = () => {
+        const ids = Array.from(document.querySelectorAll(".samplingCheck:checked")).map(x => x.value);
+        if (!ids.length) return toast("请先勾选");
+        db.sampling.forEach(s => { if (ids.includes(s.id)) { s.status = "已通过"; s.result = "合格"; } });
+        saveAll(); log("批量审核抽检", ids.join(",")); renderAll();
+      };
+      const genTrace = document.getElementById("genTrace");
+      if (genTrace) genTrace.onclick = () => {
+        db.farms.forEach(f => db.traceCodes.unshift({ id: uid("TC"), batch: `B-${Date.now()%10000}`, farmId: f.farmId, level: f.core ? "高档" : "中档", story: "客家文化故事", perks: "接驳优惠券", status: "待审核" }));
+        saveAll(); log("批量生成溯源码", "all farms"); renderAll();
+      };
+      const addTrace = document.getElementById("addTrace");
+      if (addTrace) addTrace.onclick = () => {
+        const batch = document.getElementById("traceBatch").value.trim();
+        const farmId = document.getElementById("traceFarm").value;
+        if (!batch) return toast("请输入批次号");
+        db.traceCodes.unshift({ id: uid("TC"), batch, farmId, level: "中档", story: "", perks: "DIY体验券", status: "已发布" });
+        saveAll(); renderAll();
+      };
+      const publish = document.getElementById("publishStandard");
+      if (publish) publish.onclick = () => toast("标准已发布(模拟)");
+      const down = document.getElementById("downloadStandard");
+      if (down) down.onclick = () => toast("文档下载已触发(模拟)");
+      const print = document.getElementById("printTrace");
+      if (print) print.onclick = () => toast("打印任务已提交(模拟)");
+      const ex = document.getElementById("exportTrace");
+      if (ex) ex.onclick = () => toast("导出成功(模拟)");
+      document.querySelectorAll("[data-act='verify-anti']").forEach(btn => btn.onclick = () => {
+        const row = db.antiFake.find(x => x.id === btn.dataset.id);
+        if (!row) return;
+        row.status = "核验通过";
+        saveAll(); log("防伪核验", row.id); renderAll();
+      });
+    }
+
+    function calcFacilityFee(row) {
+      const base = row.facilityType === "冷链" ? 0.5 * 1000 : row.facilityType === "工坊" ? 600 : 500;
+      const farm = db.farms.find(f => f.farmId === row.farmId);
+      const discount = farm?.core ? 0.8 : 1;
+      return Math.round(base * row.days * discount);
+    }
+
+    function renderFacility() {
+      const facRows = db.facilities;
+      const applyRows = filteredByFarm(db.facilityApply, "facility");
+      const draft = drafts.facilityRemark || "";
+      el.main.innerHTML = `
+        <div class="grid g2">
+          <div class="card table-wrap">
+            <div class="card-head"><h3><span class="lamp"></span>状态监控（冷链/工坊/设备）</h3></div>
+            <div class="card-body">
+              <table><thead><tr><th>设施</th><th>类型</th><th>状态</th><th>故障</th><th>库存/容量</th><th>操作</th></tr></thead><tbody>
+                ${facRows.map(f => `<tr><td>${f.name}</td><td>${f.type}</td><td>${f.state}</td><td>${f.fault}</td><td>${f.stock}</td><td>${actionBtn("故障上报", "submit", "danger", `data-act="fault" data-id="${f.id}"`)}</td></tr>`).join("")}
+              </tbody></table>
+            </div>
+          </div>
+          <div class="card table-wrap">
+            <div class="card-head between"><h3><span class="lamp"></span>预约管理</h3><div class="ops">${actionBtn("批量通过", "audit", "ok", `id="passFacility"`)}${actionBtn("批量驳回", "audit", "danger", `id="rejectFacility"`)}</div></div>
+            <div class="card-body">
+              <table><thead><tr><th><input type="checkbox" id="allFacility"></th><th>ID</th><th>农场</th><th>设施</th><th>开始</th><th>天数</th><th>状态</th><th>费用</th></tr></thead><tbody>
+                ${applyRows.map(a => `<tr><td><input type="checkbox" class="facilityCheck" value="${a.id}"></td><td>${a.id}</td><td>${a.farmId}</td><td>${a.facility}</td><td>${a.start}</td><td>${a.days}</td><td>${a.status}</td><td>${calcFacilityFee(a)}</td></tr>`).join("") || `<tr><td colspan="8" class="muted">无数据</td></tr>`}
+              </tbody></table>
+              <div class="row" style="margin-top:8px;">
+                <select id="newFacilityFarm">${db.farms.map(f => `<option value="${f.farmId}">${f.farmId}</option>`).join("")}</select>
+                <select id="newFacilityType"><option>冷链</option><option>工坊</option><option>设备</option></select>
+                <input id="newFacilityName" placeholder="设施名" />
+                <input id="newFacilityDays" type="number" min="1" value="1" />
+                ${actionBtn("提交预约", "submit", "primary", `id="submitFacilityApply"`)}
+              </div>
+              <div style="margin-top:8px;" class="row">
+                <textarea id="facilityRemark" rows="2" placeholder="备注（支持草稿）">${draft}</textarea>
+                ${actionBtn("保存草稿", "submit", "", `id="saveFacilityDraft"`)}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="grid g2">
+          <div class="card table-wrap">
+            <div class="card-head"><h3><span class="lamp"></span>体验管理（游客端同步）</h3></div>
+            <div class="card-body"><table><thead><tr><th>ID</th><th>项目</th><th>来源</th><th>人数</th><th>日期</th></tr></thead><tbody>${db.facilityExperience.map(x => `<tr><td>${x.id}</td><td>${x.item}</td><td>${x.from}</td><td>${x.qty}</td><td>${x.date}</td></tr>`).join("")}</tbody></table></div>
+          </div>
+          <div class="card table-wrap">
+            <div class="card-head"><h3><span class="lamp"></span>费用统计</h3></div>
+            <div class="card-body">
+              <table><thead><tr><th>农场</th><th>订单数</th><th>总费用</th><th>折扣策略</th></tr></thead><tbody>
+                ${db.farms.map(f => {
+                  const rows = db.facilityApply.filter(x => x.farmId === f.farmId);
+                  const total = rows.reduce((s, x) => s + calcFacilityFee(x), 0);
+                  return `<tr><td>${f.farmName}</td><td>${rows.length}</td><td>${total}</td><td>${f.core ? "核心农场8折" : "标准"}</td></tr>`;
+                }).join("")}
+              </tbody></table>
+            </div>
+          </div>
+        </div>
+      `;
+      const all = document.getElementById("allFacility");
+      if (all) all.onchange = () => document.querySelectorAll(".facilityCheck").forEach(c => c.checked = all.checked);
+      const pick = () => Array.from(document.querySelectorAll(".facilityCheck:checked")).map(x => x.value);
+      const pass = document.getElementById("passFacility");
+      if (pass) pass.onclick = () => {
+        const ids = pick();
+        if (!ids.length) return toast("请先勾选");
+        db.facilityApply.forEach(x => { if (ids.includes(x.id)) x.status = "已通过"; });
+        saveAll(); log("批量通过设施预约", ids.join(",")); renderAll();
+      };
+      const reject = document.getElementById("rejectFacility");
+      if (reject) reject.onclick = () => {
+        const ids = pick();
+        if (!ids.length) return toast("请先勾选");
+        confirmThen("确认批量驳回？", () => {
+          db.facilityApply.forEach(x => { if (ids.includes(x.id)) x.status = "已驳回"; });
+          saveAll(); log("批量驳回设施预约", ids.join(",")); renderAll();
+        });
+      };
+      const submit = document.getElementById("submitFacilityApply");
+      if (submit) submit.onclick = () => {
+        const farmId = document.getElementById("newFacilityFarm").value;
+        if (role().dataScope === "farm_self" && farmId !== currentAccount.farmId) return toast("仅可提交本农场申请");
+        const facilityType = document.getElementById("newFacilityType").value;
+        const facility = document.getElementById("newFacilityName").value.trim();
+        const days = Number(document.getElementById("newFacilityDays").value || 1);
+        if (!facility || days < 1) return toast("请完善预约信息");
+        db.facilityApply.unshift({ id: uid("FA"), farmId, facilityType, facility, start: nowStr().slice(0,10), days, status: "待审核" });
+        saveAll(); log("提交设施预约", facility); renderAll();
+      };
+      const saveDraft = document.getElementById("saveFacilityDraft");
+      if (saveDraft) saveDraft.onclick = () => {
+        drafts.facilityRemark = document.getElementById("facilityRemark").value;
+        save(STORAGE.drafts, drafts); toast("草稿已保存");
+      };
+      document.querySelectorAll("[data-act='fault']").forEach(btn => btn.onclick = () => {
+        const f = db.facilities.find(x => x.id === btn.dataset.id);
+        if (!f) return;
+        f.state = "故障"; f.fault = "待维修";
+        db.warnings.unshift({ id: uid("W"), type: "设施故障", farmId: "F001", status: "待处理" });
+        saveAll(); log("故障上报", f.name); renderAll();
+      });
     }
 
     function renderLive() {
-      el.pageTitle.textContent = "直播管理";
-      el.pageDesc.textContent = "直播预约申请与审核";
-      const rows = db.liveApply.filter((x) => dataAllowed({ module: "live", farmId: x.farmId }));
-      const allowSubmit = can("submit");
+      const spotRows = db.liveSpots;
+      const applyRows = filteredByFarm(db.liveApply, "live");
+      const hostRows = db.hosts;
+      const reportRows = db.liveReport;
       el.main.innerHTML = `
-        <div class="card panel">
-          <div class="row wrap" style="justify-content:space-between;margin-bottom:8px;">
-            <h3>直播申请单</h3>
-            <div class="ops">${actionBtn("审核通过", "audit", "")}${actionBtn("驳回", "audit", "danger")}</div>
+        <div class="grid g2">
+          <div class="card table-wrap">
+            <div class="card-head"><h3><span class="lamp"></span>直播点位/设备管理</h3></div>
+            <div class="card-body"><table><thead><tr><th>ID</th><th>点位</th><th>设备</th><th>状态</th><th>租赁</th><th>操作</th></tr></thead><tbody>${spotRows.map(x => `<tr><td>${x.id}</td><td>${x.spot}</td><td>${x.device}</td><td>${x.state}</td><td>${x.rental}</td><td>${actionBtn("维修记录", "edit", "", `data-act="fix-device" data-id="${x.id}"`)}</td></tr>`).join("")}</tbody></table></div>
           </div>
-          <div class="table-wrap"><table><thead><tr><th>单号</th><th>农场</th><th>主题</th><th>状态</th></tr></thead><tbody>
-            ${rows.map((r) => `<tr><td>${r.id}</td><td>${r.farmId}</td><td>${r.theme}</td><td>${r.status}</td></tr>`).join("") || `<tr><td colspan='4' class='muted'>无可见数据</td></tr>`}
-          </tbody></table></div>
-          <div style="margin-top:10px;" class="row">
-            <input id="liveTheme" placeholder="填写直播主题" ${allowSubmit ? "" : "disabled"} />
-            <button class="primary" id="submitLive" ${allowSubmit ? "" : "disabled"}>提交直播申请</button>
+          <div class="card table-wrap">
+            <div class="card-head between"><h3><span class="lamp"></span>直播预约审核</h3><div class="ops">${actionBtn("批量通过", "audit", "ok", `id="batchLivePass"`)}${actionBtn("批量驳回", "audit", "danger", `id="batchLiveReject"`)}</div></div>
+            <div class="card-body">
+              <table><thead><tr><th><input type="checkbox" id="allLive"></th><th>ID</th><th>农场</th><th>点位</th><th>时间</th><th>主题</th><th>状态</th></tr></thead><tbody>${applyRows.map(x => `<tr><td><input type="checkbox" class="liveCheck" value="${x.id}"></td><td>${x.id}</td><td>${x.farmId}</td><td>${x.spot}</td><td>${x.at}</td><td>${x.theme}</td><td>${x.status}</td></tr>`).join("") || `<tr><td colspan="7" class="muted">无数据</td></tr>`}</tbody></table>
+              <div class="row" style="margin-top:8px;"><select id="liveFarm">${db.farms.map(f => `<option value="${f.farmId}">${f.farmId}</option>`).join("")}</select><input id="liveTheme" placeholder="主题" /><select id="liveSpot">${spotRows.map(s => `<option>${s.spot}</option>`).join("")}</select>${actionBtn("提交预约", "submit", "primary", `id="submitLiveApply"`)}</div>
+            </div>
+          </div>
+        </div>
+        <div class="grid g2">
+          <div class="card table-wrap">
+            <div class="card-head"><h3><span class="lamp"></span>主播孵化管理</h3></div>
+            <div class="card-body"><table><thead><tr><th>ID</th><th>姓名</th><th>类型</th><th>培训</th><th>考核</th><th>证书</th><th>操作</th></tr></thead><tbody>${hostRows.map(h => `<tr><td>${h.id}</td><td>${h.name}</td><td>${h.type}</td><td>${h.train}</td><td>${h.exam}</td><td>${h.cert}</td><td>${actionBtn("生成证书", "audit", "ok", `data-act="cert" data-id="${h.id}"`)}</td></tr>`).join("")}</tbody></table></div>
+          </div>
+          <div class="card table-wrap">
+            <div class="card-head"><h3><span class="lamp"></span>AI直播辅助与复盘</h3></div>
+            <div class="card-body">
+              <div class="row" style="margin-bottom:8px;"><input id="scriptScene" placeholder="场景(如开场/转场/促单)" /><input id="scriptText" placeholder="话术模板" />${actionBtn("新增话术", "edit", "", `id="addScript"`)}</div>
+              <table><thead><tr><th>ID</th><th>场景</th><th>话术</th></tr></thead><tbody>${db.scripts.map(s => `<tr><td>${s.id}</td><td>${s.scene}</td><td>${s.text}</td></tr>`).join("")}</tbody></table>
+              <div style="margin-top:8px;"></div>
+              <table><thead><tr><th>房间</th><th>观看</th><th>互动率</th><th>订单</th><th>建议</th></tr></thead><tbody>${reportRows.map(r => `<tr><td>${r.room}</td><td>${r.viewers}</td><td>${r.interact}</td><td>${r.orders}</td><td>${r.advice}</td></tr>`).join("")}</tbody></table>
+              <div class="grid g2" style="margin-top:8px;">
+                <div class="kpi"><div class="muted">AI转化预测</div><div class="v">${Math.min(98, 45 + reportRows.length * 7)}%</div></div>
+                <div class="kpi"><div class="muted">AI风险提示</div><div class="v" style="font-size:18px;">弹幕响应延时偏高</div></div>
+              </div>
+              <div class="panel-note" style="margin-top:8px;">AI话术会基于直播间问答与商品问题实时推送高转化建议（当前为演示策略）。</div>
+              <div class="ops" style="margin-top:8px;">${actionBtn("实时AI诊断", "audit", "", `id="aiDiagLive"`)}${actionBtn("生成AI话术包", "audit", "ok", `id="aiPackLive"`)}${actionBtn("推送优化建议", "audit", "", `id="aiPushLive"`)}${actionBtn("生成健康度报告", "audit", "primary", `id="genLiveReport"`)}</div>
+            </div>
+          </div>
+        </div>
+        <div class="card table-wrap">
+          <div class="card-head between"><h3><span class="lamp"></span>内容素材库</h3><div class="row"><input id="assetKeyword" placeholder="关键词搜索" style="width:180px;" />${actionBtn("搜索", "view", "", `id="searchAsset"`)}${actionBtn("批量下载", "export", "", `id="batchDownloadAsset"`)}</div></div>
+          <div class="card-body">
+            <table><thead><tr><th><input type="checkbox" id="allAsset"></th><th>ID</th><th>类型</th><th>农产</th><th>主题</th><th>场景</th><th>状态</th></tr></thead><tbody id="assetBody">${db.assets.map(a => `<tr><td><input type="checkbox" class="assetCheck" value="${a.id}"></td><td>${a.id}</td><td>${a.type}</td><td>${a.farmType}</td><td>${a.theme}</td><td>${a.scene}</td><td>${a.status}</td></tr>`).join("")}</tbody></table>
+            <div class="row" style="margin-top:8px;"><select id="assetType"><option>短视频</option><option>图片</option><option>文案</option></select><input id="assetFarmType" placeholder="农产类型" /><input id="assetTheme" placeholder="文化主题" /><input id="assetScene" placeholder="使用场景" />${actionBtn("上传素材", "submit", "primary", `id="uploadAsset"`)}</div>
           </div>
         </div>
       `;
+      const allLive = document.getElementById("allLive");
+      if (allLive) allLive.onchange = () => document.querySelectorAll(".liveCheck").forEach(c => c.checked = allLive.checked);
+      const pickLive = () => Array.from(document.querySelectorAll(".liveCheck:checked")).map(x => x.value);
+      const liveBatch = (status) => {
+        const ids = pickLive();
+        if (!ids.length) return toast("请先勾选预约");
+        db.liveApply.forEach(x => { if (ids.includes(x.id)) x.status = status; });
+        saveAll(); log("直播预约批量处理", `${status}:${ids.join(",")}`); renderAll();
+      };
+      const pass = document.getElementById("batchLivePass");
+      if (pass) pass.onclick = () => liveBatch("已通过");
+      const reject = document.getElementById("batchLiveReject");
+      if (reject) reject.onclick = () => liveBatch("已驳回");
+      const submit = document.getElementById("submitLiveApply");
+      if (submit) submit.onclick = () => {
+        const farmId = document.getElementById("liveFarm").value;
+        if (role().dataScope === "farm_self" && farmId !== currentAccount.farmId) return toast("仅可提交本农场预约");
+        const theme = document.getElementById("liveTheme").value.trim();
+        const spot = document.getElementById("liveSpot").value;
+        if (!theme) return toast("请填写直播主题");
+        db.liveApply.unshift({ id: uid("LA"), farmId, spot, at: nowStr().slice(0,16), theme, status: "待审核" });
+        saveAll(); log("提交直播预约", theme); renderAll();
+      };
+      document.querySelectorAll("[data-act='fix-device']").forEach(btn => btn.onclick = () => toast("维修记录已登记(模拟)"));
+      document.querySelectorAll("[data-act='cert']").forEach(btn => btn.onclick = () => {
+        const row = db.hosts.find(x => x.id === btn.dataset.id);
+        if (!row) return;
+        row.cert = "已生成";
+        saveAll(); log("生成主播证书", row.id); renderAll();
+      });
+      const addScript = document.getElementById("addScript");
+      if (addScript) addScript.onclick = () => {
+        const scene = document.getElementById("scriptScene").value.trim();
+        const text = document.getElementById("scriptText").value.trim();
+        if (!scene || !text) return toast("请输入场景与话术");
+        db.scripts.unshift({ id: uid("SC"), scene, text });
+        saveAll(); log("新增话术", scene); renderAll();
+      };
+      const gen = document.getElementById("genLiveReport");
+      if (gen) gen.onclick = () => {
+        db.liveReport.unshift({ id: uid("LR"), room: `L${Date.now()%10000}`, viewers: 6000 + Math.round(Math.random()*6000), interact: (6 + Math.random()*6).toFixed(1)+"%", orders: 90 + Math.round(Math.random()*260), advice: "建议优化前10分钟互动节奏" });
+        saveAll(); log("生成直播复盘", "AI"); renderAll();
+      };
+      const aiDiagLive = document.getElementById("aiDiagLive");
+      if (aiDiagLive) aiDiagLive.onclick = () => {
+        const row = db.liveReport[0];
+        if (!row) return toast("暂无复盘数据");
+        row.advice = `AI诊断：${row.interact}互动偏低，建议增加口播停顿与弹幕复述`;
+        saveAll();
+        log("AI实时诊断", row.room);
+        toast("AI诊断已更新到复盘建议");
+        renderAll();
+      };
 
-      const btn = document.getElementById("submitLive");
-      if (btn) {
-        btn.onclick = () => {
-          if (!can("submit")) return;
-          const input = document.getElementById("liveTheme");
-          const theme = input.value.trim();
-          if (!theme) return alert("请输入直播主题");
-          const id = `L${String(Date.now()).slice(-4)}`;
-          const farmId = currentAccount.farmId || db.farms[0].farmId;
-          db.liveApply.unshift({ id, farmId, theme, status: "待审核" });
-          save(STORAGE.data, db);
-          renderByMenu(currentMenu);
-        };
-      }
+      const aiPackLive = document.getElementById("aiPackLive");
+      if (aiPackLive) aiPackLive.onclick = () => {
+        const pack = [
+          { scene: "开场30秒", text: "欢迎来到客乡汇，今天带你看花灯农场爆款" },
+          { scene: "产品讲解", text: "先看果型，再看糖度，最后讲产地故事" },
+          { scene: "促单转化", text: "现在下单送DIY体验券，库存实时递减" }
+        ];
+        pack.reverse().forEach(x => db.scripts.unshift({ id: uid("SC"), scene: x.scene, text: x.text }));
+        saveAll();
+        log("生成AI话术包", "3条");
+        toast("已生成AI话术包");
+        renderAll();
+      };
+
+      const aiPushLive = document.getElementById("aiPushLive");
+      if (aiPushLive) aiPushLive.onclick = () => {
+        const row = db.liveReport[0];
+        const txt = row ? `直播间${row.room}优化：前5分钟加福利钩子` : "直播优化建议";
+        db.warnings.unshift({ id: uid("W"), type: "AI直播优化提醒", farmId: "ALL", status: "待处理" });
+        db.todos.unshift({ id: uid("T"), text: txt, priority: "中", status: "待处理", menu: "l_ai" });
+        saveAll();
+        log("推送直播优化建议", txt);
+        toast("优化建议已推送到待办");
+        renderRightPane();
+      };
+      const allAsset = document.getElementById("allAsset");
+      if (allAsset) allAsset.onchange = () => document.querySelectorAll(".assetCheck").forEach(c => c.checked = allAsset.checked);
+      const upload = document.getElementById("uploadAsset");
+      if (upload) upload.onclick = () => {
+        const type = document.getElementById("assetType").value;
+        const farmType = document.getElementById("assetFarmType").value.trim();
+        const theme = document.getElementById("assetTheme").value.trim();
+        const scene = document.getElementById("assetScene").value.trim();
+        if (!farmType || !theme || !scene) return toast("请完整填写素材信息");
+        db.assets.unshift({ id: uid("AT"), type, farmType, theme, scene, status: "待审核" });
+        saveAll(); log("上传素材", type); renderAll();
+      };
+      const search = document.getElementById("searchAsset");
+      if (search) search.onclick = () => {
+        const kw = document.getElementById("assetKeyword").value.trim();
+        const rows = db.assets.filter(a => `${a.id}${a.type}${a.farmType}${a.theme}${a.scene}`.includes(kw));
+        const body = document.getElementById("assetBody");
+        body.innerHTML = rows.map(a => `<tr><td><input type="checkbox" class="assetCheck" value="${a.id}"></td><td>${a.id}</td><td>${a.type}</td><td>${a.farmType}</td><td>${a.theme}</td><td>${a.scene}</td><td>${a.status}</td></tr>`).join("") || `<tr><td colspan="7" class="muted">无结果</td></tr>`;
+      };
+      const dl = document.getElementById("batchDownloadAsset");
+      if (dl) dl.onclick = () => {
+        const ids = Array.from(document.querySelectorAll(".assetCheck:checked")).map(x => x.value);
+        toast(ids.length ? `已打包下载 ${ids.length} 项(模拟)` : "请先勾选素材");
+      };
     }
 
     function renderMarketing() {
-      el.pageTitle.textContent = "营销管理";
-      el.pageDesc.textContent = "营销活动数据（示例）";
       el.main.innerHTML = `
-        <div class="card panel">
-          <h3>活动列表</h3>
-          <div class="table-wrap"><table><thead><tr><th>活动</th><th>状态</th><th>操作</th></tr></thead><tbody>
-            <tr><td>春季采摘节</td><td><span class="tag ok">进行中</span></td><td class="ops">${actionBtn("查看", "view", "")}${actionBtn("编辑", "edit", "")}</td></tr>
-            <tr><td>品牌直播周</td><td><span class="tag">筹备中</span></td><td class="ops">${actionBtn("查看", "view", "")}${actionBtn("编辑", "edit", "")}</td></tr>
-          </tbody></table></div>
+        <div class="grid g2">
+          <div class="card table-wrap">
+            <div class="card-head between"><h3><span class="lamp"></span>线上引流管理（UGC审核）</h3><div class="ops">${actionBtn("批量通过", "audit", "ok", `id="ugcPass"`)}${actionBtn("批量驳回", "audit", "danger", `id="ugcReject"`)}</div></div>
+            <div class="card-body">
+              <table><thead><tr><th><input type="checkbox" id="allUgc"></th><th>ID</th><th>用户</th><th>内容</th><th>点赞</th><th>状态</th></tr></thead><tbody>${db.ugc.map(u => `<tr><td><input type="checkbox" class="ugcCheck" value="${u.id}"></td><td>${u.id}</td><td>${u.user}</td><td>${u.content}</td><td>${u.likes}</td><td>${u.status}</td></tr>`).join("")}</tbody></table>
+              <div class="row" style="margin-top:8px;"><input id="ugcRule" placeholder="UGC激励规则，如 点赞>50兑换接驳名额" />${actionBtn("保存激励规则", "config", "", `id="saveUgcRule"`)}</div>
+            </div>
+          </div>
+          <div class="card table-wrap">
+            <div class="card-head"><h3><span class="lamp"></span>线下引流管理（快闪店/企业合作）</h3></div>
+            <div class="card-body"><table><thead><tr><th>ID</th><th>城市</th><th>门店</th><th>下载量</th><th>预约量</th><th>证书</th><th>操作</th></tr></thead><tbody>${db.offlineCampaign.map(o => `<tr><td>${o.id}</td><td>${o.city}</td><td>${o.store}</td><td>${o.download}</td><td>${o.booking}</td><td>${o.cert}</td><td>${actionBtn("生成帮扶证书", "audit", "ok", `data-act="help-cert" data-id="${o.id}"`)}</td></tr>`).join("")}</tbody></table></div>
+          </div>
+        </div>
+        <div class="grid g2">
+          <div class="card table-wrap">
+            <div class="card-head"><h3><span class="lamp"></span>区域品牌联动</h3></div>
+            <div class="card-body"><table><thead><tr><th>ID</th><th>品牌</th><th>产品</th><th>状态</th><th>销量</th><th>操作</th></tr></thead><tbody>${db.brandLink.map(b => `<tr><td>${b.id}</td><td>${b.brand}</td><td>${b.product}</td><td>${b.status}</td><td>${b.sales}</td><td>${actionBtn("上架审核", "audit", "", `data-act="brand-audit" data-id="${b.id}"`)}</td></tr>`).join("")}</tbody></table></div>
+          </div>
+          <div class="card table-wrap">
+            <div class="card-head"><h3><span class="lamp"></span>AI路线配置</h3></div>
+            <div class="card-body">
+              <table><thead><tr><th>ID</th><th>客群</th><th>时长</th><th>兴趣</th><th>路线</th></tr></thead><tbody>${db.routes.map(r => `<tr><td>${r.id}</td><td>${r.crowd}</td><td>${r.duration}</td><td>${r.interest}</td><td>${r.path}</td></tr>`).join("")}</tbody></table>
+              <div class="row" style="margin-top:8px;"><select id="routeCrowd"><option>亲子</option><option>情侣</option><option>团建</option><option>研学</option></select><input id="routeDuration" placeholder="时长" /><input id="routeInterest" placeholder="兴趣偏好" /><input id="routePath" placeholder="路线节点" />${actionBtn("新增路线模板", "config", "primary", `id="addRoute"`)}</div>
+              <div class="panel-note" style="margin-top:8px;">路线模板会联动客流分流建议（演示逻辑）。</div>
+            </div>
+          </div>
         </div>
       `;
+      const all = document.getElementById("allUgc");
+      if (all) all.onchange = () => document.querySelectorAll(".ugcCheck").forEach(c => c.checked = all.checked);
+      const batchUgc = (status) => {
+        const ids = Array.from(document.querySelectorAll(".ugcCheck:checked")).map(x => x.value);
+        if (!ids.length) return toast("请先勾选内容");
+        db.ugc.forEach(x => { if (ids.includes(x.id)) x.status = status; });
+        saveAll(); log("UGC批量审核", `${status}:${ids.join(",")}`); renderAll();
+      };
+      const pass = document.getElementById("ugcPass");
+      if (pass) pass.onclick = () => batchUgc("已通过");
+      const reject = document.getElementById("ugcReject");
+      if (reject) reject.onclick = () => batchUgc("已驳回");
+      const rule = document.getElementById("saveUgcRule");
+      if (rule) rule.onclick = () => {
+        const txt = document.getElementById("ugcRule").value.trim();
+        if (!txt) return toast("请输入规则");
+        log("保存UGC激励规则", txt); toast("激励规则已保存");
+      };
+      document.querySelectorAll("[data-act='help-cert']").forEach(btn => btn.onclick = () => toast("帮扶证书已生成(模拟)"));
+      document.querySelectorAll("[data-act='brand-audit']").forEach(btn => btn.onclick = () => {
+        const row = db.brandLink.find(x => x.id === btn.dataset.id);
+        if (!row) return;
+        row.status = "已上架";
+        saveAll(); renderAll();
+      });
+      const addRoute = document.getElementById("addRoute");
+      if (addRoute) addRoute.onclick = () => {
+        const crowd = document.getElementById("routeCrowd").value;
+        const duration = document.getElementById("routeDuration").value.trim();
+        const interest = document.getElementById("routeInterest").value.trim();
+        const path = document.getElementById("routePath").value.trim();
+        if (!duration || !interest || !path) return toast("请完整填写路线模板");
+        db.routes.unshift({ id: uid("RT"), crowd, duration, interest, path });
+        saveAll(); log("新增AI路线", crowd); renderAll();
+      };
     }
+
+    function recomputeBills() { db.bills.forEach(b => { b.total = b.facilityFee + b.serviceFee + b.operationFee; }); }
 
     function renderFinance() {
-      el.pageTitle.textContent = "财务管理";
-      el.pageDesc.textContent = "费用明细按数据权限过滤";
-      const rows = db.finance.filter((x) => dataAllowed({ module: "finance", farmId: x.farmId }));
+      recomputeBills();
+      db.dividend.collective = Math.round(db.dividend.yearProfit * db.dividend.ratio);
+      db.dividend.farms = db.dividend.yearProfit - db.dividend.collective;
       el.main.innerHTML = `
-        <div class="card panel table-wrap">
-          <div class="row wrap" style="justify-content:space-between;margin-bottom:8px;">
-            <h3>费用明细</h3>
-            <div class="ops">${actionBtn("导出", "view", "")}${actionBtn("调整收费标准", "config", "")}</div>
+        <div class="grid g2">
+          <div class="card table-wrap">
+            <div class="card-head"><h3><span class="lamp"></span>收费标准配置</h3></div>
+            <div class="card-body">
+              <table><thead><tr><th>ID</th><th>项目</th><th>单位</th><th>单价</th><th>操作</th></tr></thead><tbody>${db.feeRules.map(r => `<tr><td>${r.id}</td><td>${r.item}</td><td>${r.unit}</td><td>${r.price}</td><td>${actionBtn("修改", "config", "", `data-act="edit-fee" data-id="${r.id}"`)}</td></tr>`).join("")}</tbody></table>
+              <div class="row" style="margin-top:8px;"><input id="feeItem" placeholder="新增收费项" /><input id="feeUnit" placeholder="单位" /><input id="feePrice" type="number" min="0" placeholder="单价" />${actionBtn("新增收费标准", "config", "primary", `id="addFeeRule"`)}</div>
+            </div>
           </div>
-          <table><thead><tr><th>农场</th><th>月份</th><th>费用(元)</th><th>状态</th><th>操作</th></tr></thead><tbody>
-            ${rows.map((r) => `<tr><td>${r.farmId}</td><td>${r.month}</td><td>${r.fee}</td><td>${r.status}</td><td class='ops'>${actionBtn("查看", "view", "")}${actionBtn("编辑", "edit", "")}${actionBtn("删除", "delete", "danger")}</td></tr>`).join("") || `<tr><td colspan='5' class='muted'>无可见数据</td></tr>`}
-          </tbody></table>
+          <div class="card table-wrap">
+            <div class="card-head between"><h3><span class="lamp"></span>费用核算与收取</h3><div class="ops">${actionBtn("批量结算", "audit", "ok", `id="batchSettle"`)}${actionBtn("导出明细", "export", "", `id="exportBill"`)}</div></div>
+            <div class="card-body"><table><thead><tr><th><input type="checkbox" id="allBill"></th><th>ID</th><th>农场</th><th>设施费</th><th>服务费</th><th>代运营费</th><th>合计</th><th>状态</th></tr></thead><tbody>${filteredByFarm(db.bills, "finance").map(b => `<tr><td><input type="checkbox" class="billCheck" value="${b.id}"></td><td>${b.id}</td><td>${b.farmId}</td><td>${b.facilityFee}</td><td>${b.serviceFee}</td><td>${b.operationFee}</td><td>${b.total}</td><td>${b.paid}</td></tr>`).join("") || `<tr><td colspan="8" class="muted">无数据</td></tr>`}</tbody></table></div>
+          </div>
+        </div>
+        <div class="grid g2">
+          <div class="card table-wrap">
+            <div class="card-head"><h3><span class="lamp"></span>风险保证金 / 保底补偿</h3></div>
+            <div class="card-body"><table><thead><tr><th>ID</th><th>农场</th><th>保证金</th><th>冻结</th><th>补偿金额</th><th>触发</th><th>操作</th></tr></thead><tbody>${filteredByFarm(db.riskFund, "finance").map(r => `<tr><td>${r.id}</td><td>${r.farmId}</td><td>${r.deposit}</td><td>${r.frozen}</td><td>${r.compensate}</td><td>${r.trigger}</td><td>${actionBtn("触发补偿", "audit", "", `data-act="trigger-comp" data-id="${r.id}"`)}</td></tr>`).join("") || `<tr><td colspan="7" class="muted">无数据</td></tr>`}</tbody></table></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3><span class="lamp"></span>集体资产分红</h3></div>
+            <div class="card-body">
+              <div class="grid g3">
+                <div class="kpi"><div class="muted">年度盈利</div><div class="v">${db.dividend.yearProfit}</div></div>
+                <div class="kpi"><div class="muted">分红比例</div><div class="v">${Math.round(db.dividend.ratio*100)}%</div></div>
+                <div class="kpi"><div class="muted">村集体分红</div><div class="v">${db.dividend.collective}</div></div>
+              </div>
+              <div class="row" style="margin-top:8px;"><input id="divProfit" type="number" value="${db.dividend.yearProfit}" /><input id="divRatio" type="number" min="0" max="1" step="0.01" value="${db.dividend.ratio}" />${actionBtn("重算分红", "config", "primary", `id="calcDiv"`)}</div>
+              <div class="muted" style="margin-top:8px;">农场主分红池：${db.dividend.farms}</div>
+            </div>
+          </div>
         </div>
       `;
+      const addRule = document.getElementById("addFeeRule");
+      if (addRule) addRule.onclick = () => {
+        const item = document.getElementById("feeItem").value.trim();
+        const unit = document.getElementById("feeUnit").value.trim();
+        const price = Number(document.getElementById("feePrice").value);
+        if (!item || !unit || Number.isNaN(price) || price < 0) return toast("请填写有效收费标准");
+        db.feeRules.unshift({ id: uid("FR"), item, unit, price });
+        saveAll(); log("新增收费标准", item); renderAll();
+      };
+      document.querySelectorAll("[data-act='edit-fee']").forEach(btn => btn.onclick = () => {
+        const row = db.feeRules.find(x => x.id === btn.dataset.id);
+        if (!row) return;
+        const next = window.prompt("输入新单价", String(row.price));
+        const v = Number(next);
+        if (Number.isNaN(v) || v < 0) return;
+        row.price = v;
+        saveAll(); log("修改收费标准", `${row.id}:${v}`); renderAll();
+      });
+      const all = document.getElementById("allBill");
+      if (all) all.onchange = () => document.querySelectorAll(".billCheck").forEach(c => c.checked = all.checked);
+      const settle = document.getElementById("batchSettle");
+      if (settle) settle.onclick = () => {
+        const ids = Array.from(document.querySelectorAll(".billCheck:checked")).map(x => x.value);
+        if (!ids.length) return toast("请先勾选账单");
+        confirmThen("确认批量结算？", () => {
+          db.bills.forEach(b => { if (ids.includes(b.id)) b.paid = "已结算"; });
+          saveAll(); log("批量结算", ids.join(",")); renderAll();
+        });
+      };
+      const exportBill = document.getElementById("exportBill");
+      if (exportBill) exportBill.onclick = () => toast("账单导出成功(模拟)");
+      document.querySelectorAll("[data-act='trigger-comp']").forEach(btn => btn.onclick = () => {
+        const row = db.riskFund.find(x => x.id === btn.dataset.id);
+        if (!row) return;
+        row.trigger = "是";
+        row.compensate = row.compensate || 1200;
+        saveAll(); log("触发保底补偿", row.id); renderAll();
+      });
+      const calcDiv = document.getElementById("calcDiv");
+      if (calcDiv) calcDiv.onclick = () => {
+        const p = Number(document.getElementById("divProfit").value);
+        const r = Number(document.getElementById("divRatio").value);
+        if (Number.isNaN(p) || p < 0 || Number.isNaN(r) || r < 0 || r > 1) return toast("请输入合法参数");
+        db.dividend.yearProfit = p;
+        db.dividend.ratio = r;
+        saveAll(); log("重算分红", `${p},${r}`); renderAll();
+      };
     }
 
-    function roleOptions(selectedId) {
-      return roles.map((r) => `<option value="${r.id}" ${r.id === selectedId ? "selected" : ""}>${r.name}</option>`).join("");
-    }
-
+    function roleOptions(sel) { return roles.map(r => `<option value="${r.id}" ${r.id === sel ? "selected" : ""}>${r.name}</option>`).join(""); }
     function menuChecks(selected) {
       const set = new Set(selected || []);
-      return MENUS.filter((m) => !m.parent).map((m) => `<label class='row' style='margin-bottom:6px;'><input type='checkbox' value='${m.id}' ${set.has(m.id) ? "checked" : ""} style='width:auto;'>${m.name}</label>`).join("");
+      return MENUS.filter(m => !m.parent).map(m => `<label class="row" style="margin-bottom:6px;"><input style="width:auto;" type="checkbox" value="${m.id}" ${set.has(m.id) ? "checked" : ""}>${m.name}</label>`).join("");
     }
 
     function renderSettings() {
-      el.pageTitle.textContent = "系统设置 - 用户管理";
-      el.pageDesc.textContent = "角色创建、权限分配、账号绑定（仅超级管理员可配置）";
-
-      if (!can("config")) {
-        el.main.innerHTML = `<div class='card panel'><h3>无权限</h3><p class='muted' style='margin-top:8px;'>仅总部超级管理员可进入系统设置并执行角色创建、权限分配与账号绑定。</p></div>`;
-        return;
-      }
-
       el.main.innerHTML = `
-        <div class="grid-2">
-          <div class="card panel">
-            <h3>角色创建</h3>
-            <input id="newRoleName" placeholder="角色名称" style="margin-top:8px;">
-            <div class="row" style="margin-top:8px;">
-              <select id="newRoleLevel">
-                <option value="2">2级-总部部门管理员</option>
-                <option value="3">3级-品控委员会专家</option>
-                <option value="4">4级-入孵农场主</option>
-              </select>
-              <select id="newRoleDataScope">
-                <option value="dept_related">部门相关数据</option>
-                <option value="quality_global">全域品控数据</option>
-                <option value="farm_self">自身农场数据</option>
-              </select>
+        <div class="grid g2">
+          <div class="card">
+            <div class="card-head"><h3><span class="lamp"></span>用户与权限管理</h3></div>
+            <div class="card-body">
+              ${can("config") ? `
+              <div class="row">
+                <input id="newRoleName" placeholder="角色名称" />
+                <select id="newRoleLevel"><option value="2">2级</option><option value="3">3级</option><option value="4">4级</option></select>
+                <select id="newRoleScope"><option value="dept_related">部门相关</option><option value="quality_global">品控全域</option><option value="farm_self">自身农场</option></select>
+              </div>
+              <div class="muted" style="margin-top:8px;">一级菜单权限</div>
+              <div id="newRoleMenus" style="margin-top:6px;">${menuChecks([])}</div>
+              <div class="ops" style="margin-top:8px;">${actionBtn("创建角色", "config", "primary", `id="createRole"`)}</div>
+              <hr style="border:none;border-top:1px solid var(--border);margin:10px 0;">
+              <div class="row">
+                <select id="bindAccount">${accounts.map(a => `<option value="${a.id}">${a.displayName}(${a.username})</option>`).join("")}</select>
+                <select id="bindRole">${roleOptions(accounts[0]?.roleId)}</select>
+              </div>
+              <div class="muted" style="margin-top:8px;">账号自定义一级菜单追加</div>
+              <div id="bindMenus" style="margin-top:6px;">${menuChecks(accounts[0]?.customMenuIds || [])}</div>
+              <div class="ops" style="margin-top:8px;">${actionBtn("保存绑定", "config", "primary", `id="saveBind"`)}</div>
+              ` : `<div class="panel-note">仅超级管理员可修改权限配置。</div>`}
+              <div class="table-wrap" style="margin-top:10px;">
+                <table><thead><tr><th>账号</th><th>角色</th><th>等级</th><th>数据权限</th><th>菜单数</th><th>登录日志</th></tr></thead><tbody>
+                  ${accounts.map(a => {
+                    const r = getRole(a.roleId);
+                    const m = Array.from(new Set([...(r.menuIds||[]), ...((a.customMenuIds)||[])]));
+                    return `<tr><td>${a.displayName}</td><td>${r.name}</td><td>${r.level}</td><td>${r.dataScope}</td><td>${m.length}</td><td>${nowStr().slice(5,16)}</td></tr>`;
+                  }).join("")}
+                </tbody></table>
+              </div>
             </div>
-            <div style="margin-top:8px;" class="muted">菜单权限（一级菜单）</div>
-            <div id="newRoleMenus" style="margin-top:6px;">${menuChecks([])}</div>
-            <button class="primary" id="createRole" style="margin-top:8px;">创建角色</button>
           </div>
-
-          <div class="card panel">
-            <h3>账号绑定与自定义菜单</h3>
-            <select id="bindAccount" style="margin-top:8px;">${accounts.map((a) => `<option value='${a.id}'>${a.displayName}(${a.username})</option>`).join("")}</select>
-            <select id="bindRole" style="margin-top:8px;">${roleOptions(accounts[0]?.roleId || "")}</select>
-            <div style="margin-top:8px;" class="muted">账号自定义可操作菜单（在角色基础上追加）</div>
-            <div id="bindMenus" style="margin-top:6px;">${menuChecks(accounts[0]?.customMenuIds || [])}</div>
-            <button class="primary" id="saveBind" style="margin-top:8px;">保存绑定</button>
+          <div class="card">
+            <div class="card-head"><h3><span class="lamp"></span>品牌视觉配置</h3></div>
+            <div class="card-body">
+              <div class="row"><input id="brandLogo" placeholder="LOGO地址(可选)" value="${db.settings.theme.logo || ""}" /></div>
+              <div class="row" style="margin-top:8px;"><input id="brandRed" value="${db.settings.theme.red}" /><input id="brandGreen" value="${db.settings.theme.green}" /><input id="brandBlue" value="${db.settings.theme.blue}" /></div>
+              <div class="muted" style="margin-top:8px;">支持按节庆调整主题色（演示：修改后立即生效）。</div>
+              <div class="ops" style="margin-top:8px;">${actionBtn("应用视觉配置", "config", "primary", `id="saveBrand"`)}</div>
+              <hr style="border:none;border-top:1px solid var(--border);margin:10px 0;">
+              <h4 style="margin:0 0 8px 0;">通知模板设置</h4>
+              <div class="row"><select id="noticeType"><option>孵化进度</option><option>抽检提醒</option><option>直播提醒</option><option>缴费提醒</option></select><select id="noticeChannel"><option>短信</option><option>小程序消息</option><option>邮件</option></select></div>
+              <textarea id="noticeTpl" rows="3" placeholder="可插入变量 {farmName} {amount} {deadline}"></textarea>
+              <div class="ops" style="margin-top:8px;">${actionBtn("保存模板", "config", "", `id="saveNotice"`)}</div>
+              <div class="table-wrap" style="margin-top:8px;"><table><thead><tr><th>类型</th><th>渠道</th><th>模板</th></tr></thead><tbody>${db.notices.map(n => `<tr><td>${n.type}</td><td>${n.channel}</td><td>${n.template}</td></tr>`).join("")}</tbody></table></div>
+            </div>
           </div>
         </div>
-
-        <div class="card panel table-wrap">
-          <h3>角色与账号清单</h3>
-          <table style="margin-top:8px;"><thead><tr><th>账号</th><th>角色</th><th>等级</th><th>数据权限</th><th>可见菜单数</th></tr></thead><tbody>
-            ${accounts.map((a) => {
-              const r = getRole(a.roleId);
-              const menus = mergedMenuIds(a, r);
-              return `<tr><td>${a.displayName}</td><td>${r.name}</td><td>${r.level}</td><td>${r.dataScope}</td><td>${menus.length}</td></tr>`;
-            }).join("")}
-          </tbody></table>
+        <div class="grid g2">
+          <div class="card table-wrap">
+            <div class="card-head between"><h3><span class="lamp"></span>数据管理</h3><div class="ops">${actionBtn("手动备份", "config", "", `id="manualBackup"`)}${actionBtn("恢复最近备份", "config", "danger", `id="restoreBackup"`)}${actionBtn("导出报表(Excel/PDF)", "export", "", `id="exportReports"`)}</div></div>
+            <div class="card-body">
+              <table><thead><tr><th>ID</th><th>时间</th><th>方式</th><th>保存时长</th></tr></thead><tbody>${db.backups.map(b => `<tr><td>${b.id}</td><td>${b.at}</td><td>${b.mode}</td><td>${b.keep}</td></tr>`).join("")}</tbody></table>
+              <div class="panel-note" style="margin-top:8px;">自动备份：每天凌晨1点，保留>=1年（演示策略）。</div>
+            </div>
+          </div>
+          <div class="card table-wrap">
+            <div class="card-head"><h3><span class="lamp"></span>日志管理</h3></div>
+            <div class="card-body">
+              <div class="row" style="margin-bottom:8px;"><input id="logKeyword" placeholder="关键词" /><input id="logUser" placeholder="用户" /><input id="logTime" placeholder="时间(yyyy-mm-dd)" />${actionBtn("筛选", "view", "", `id="filterLog"`)}${actionBtn("导出日志", "export", "", `id="exportLog"`)}</div>
+              <table><thead><tr><th>时间</th><th>用户</th><th>操作</th><th>详情</th></tr></thead><tbody id="logBody">${logs.slice(0, 50).map(l => `<tr><td>${l.at}</td><td>${l.user}</td><td>${l.action}</td><td>${l.detail}</td></tr>`).join("") || `<tr><td colspan="4" class="muted">暂无日志</td></tr>`}</tbody></table>
+            </div>
+          </div>
         </div>
       `;
-
-      document.getElementById("createRole").onclick = () => {
-        const name = document.getElementById("newRoleName").value.trim();
-        if (!name) return alert("请输入角色名称");
-        const level = Number(document.getElementById("newRoleLevel").value);
-        const dataScope = document.getElementById("newRoleDataScope").value;
-        const checks = Array.from(document.querySelectorAll("#newRoleMenus input[type='checkbox']:checked"));
-        const level1Ids = checks.map((c) => c.value);
-        const level2Ids = MENUS.filter((m) => m.parent && level1Ids.includes(m.parent)).map((m) => m.id);
-        const menuIds = [...level1Ids, ...level2Ids];
-        const actionsByLevel = {
-          2: ["view", "edit", "audit"],
-          3: ["view", "edit", "audit"],
-          4: ["view", "submit"]
+      if (can("config")) {
+        const createRole = document.getElementById("createRole");
+        if (createRole) createRole.onclick = () => {
+          const name = document.getElementById("newRoleName").value.trim();
+          if (!name) return toast("请输入角色名称");
+          const level = Number(document.getElementById("newRoleLevel").value);
+          const dataScope = document.getElementById("newRoleScope").value;
+          const level1 = Array.from(document.querySelectorAll("#newRoleMenus input:checked")).map(x => x.value);
+          const level2 = MENUS.filter(m => m.parent && level1.includes(m.parent)).map(m => m.id);
+          const actionsByLevel = { 2: ["view","edit","audit","submit","export"], 3: ["view","edit","audit","submit","export"], 4: ["view","submit","export"] };
+          roles.push({ id: uid("ROLE"), name, level, dept: "custom", menuIds: [...level1, ...level2], actions: actionsByLevel[level] || ["view"], dataScope });
+          saveAll(); log("创建角色", name); renderAll();
         };
-        roles.push({
-          id: `custom_${Date.now()}`,
-          name,
-          level,
-          dept: "custom",
-          menuIds,
-          actions: actionsByLevel[level] || ["view"],
-          dataScope
-        });
-        save(STORAGE.roles, roles);
-        alert("角色创建成功");
-        renderByMenu("settings");
-      };
-
-      const bindAccount = document.getElementById("bindAccount");
-      const bindRole = document.getElementById("bindRole");
-      const bindMenus = document.getElementById("bindMenus");
-
-      function refreshBindMenus() {
-        const acc = accounts.find((x) => x.id === bindAccount.value);
-        bindRole.innerHTML = roleOptions(acc.roleId);
-        bindMenus.innerHTML = menuChecks(acc.customMenuIds || []);
-      }
-
-      bindAccount.onchange = refreshBindMenus;
-      refreshBindMenus();
-
-      document.getElementById("saveBind").onclick = () => {
-        const acc = accounts.find((x) => x.id === bindAccount.value);
-        if (!acc) return;
-        acc.roleId = bindRole.value;
-        const custom = Array.from(bindMenus.querySelectorAll("input[type='checkbox']:checked")).map((x) => x.value);
-        acc.customMenuIds = custom;
-        save(STORAGE.accounts, accounts);
-        alert("账号绑定已保存");
-        renderAccountOptions();
-        if (acc.id === currentAccount.id) {
-          currentAccount = acc;
-          ensureMenuVisible();
-          renderAll();
-        } else {
-          renderByMenu("settings");
+        const bindAccount = document.getElementById("bindAccount");
+        const bindRole = document.getElementById("bindRole");
+        const bindMenus = document.getElementById("bindMenus");
+        function refreshBind() {
+          const acc = accounts.find(a => a.id === bindAccount.value);
+          if (!acc) return;
+          bindRole.innerHTML = roleOptions(acc.roleId);
+          bindMenus.innerHTML = menuChecks(acc.customMenuIds || []);
         }
+        bindAccount.onchange = refreshBind;
+        refreshBind();
+        const saveBind = document.getElementById("saveBind");
+        if (saveBind) saveBind.onclick = () => {
+          const acc = accounts.find(a => a.id === bindAccount.value);
+          if (!acc) return;
+          acc.roleId = bindRole.value;
+          acc.customMenuIds = Array.from(bindMenus.querySelectorAll("input:checked")).map(x => x.value);
+          saveAll(); log("保存账号绑定", acc.username);
+          if (acc.id === currentAccount.id) currentAccount = acc;
+          renderAll();
+        };
+      }
+      const saveBrand = document.getElementById("saveBrand");
+      if (saveBrand) saveBrand.onclick = () => {
+        if (!can("config")) return;
+        db.settings.theme.logo = document.getElementById("brandLogo").value.trim();
+        db.settings.theme.red = document.getElementById("brandRed").value.trim() || "#D82E2F";
+        db.settings.theme.green = document.getElementById("brandGreen").value.trim() || "#39B54A";
+        db.settings.theme.blue = document.getElementById("brandBlue").value.trim() || "#1E50B3";
+        document.documentElement.style.setProperty("--red", db.settings.theme.red);
+        document.documentElement.style.setProperty("--green", db.settings.theme.green);
+        document.documentElement.style.setProperty("--blue", db.settings.theme.blue);
+        saveAll(); log("应用视觉配置", JSON.stringify(db.settings.theme)); toast("视觉配置已生效");
       };
+      const saveNotice = document.getElementById("saveNotice");
+      if (saveNotice) saveNotice.onclick = () => {
+        if (!can("config")) return;
+        const type = document.getElementById("noticeType").value;
+        const channel = document.getElementById("noticeChannel").value;
+        const template = document.getElementById("noticeTpl").value.trim();
+        if (!template) return toast("请输入模板内容");
+        db.notices.unshift({ id: uid("NT"), type, channel, template });
+        saveAll(); log("保存通知模板", type); renderAll();
+      };
+      const backup = document.getElementById("manualBackup");
+      if (backup) backup.onclick = () => {
+        if (!can("config")) return;
+        db.backups.unshift({ id: uid("BK"), at: nowStr(), mode: "手动", keep: "1年" });
+        saveAll(); log("手动备份", "db"); renderAll();
+      };
+      const restore = document.getElementById("restoreBackup");
+      if (restore) restore.onclick = () => {
+        if (!can("config")) return;
+        confirmThen("恢复最近备份会覆盖当前演示数据，确认继续？", () => {
+          db = deepClone(defaultDb);
+          saveAll();
+          log("恢复备份", "latest");
+          renderAll();
+        });
+      };
+      const exr = document.getElementById("exportReports");
+      if (exr) exr.onclick = () => toast("报表导出任务已创建(模拟)");
+      const filter = document.getElementById("filterLog");
+      if (filter) filter.onclick = () => {
+        const kw = document.getElementById("logKeyword").value.trim();
+        const user = document.getElementById("logUser").value.trim();
+        const time = document.getElementById("logTime").value.trim();
+        const rows = logs.filter(l => (!kw || `${l.action}${l.detail}`.includes(kw)) && (!user || l.user.includes(user)) && (!time || l.at.startsWith(time)));
+        document.getElementById("logBody").innerHTML = rows.slice(0, 80).map(l => `<tr><td>${l.at}</td><td>${l.user}</td><td>${l.action}</td><td>${l.detail}</td></tr>`).join("") || `<tr><td colspan="4" class="muted">无结果</td></tr>`;
+      };
+      const exLog = document.getElementById("exportLog");
+      if (exLog) exLog.onclick = () => toast("日志导出成功(模拟)");
     }
 
     function renderByMenu(menuId) {
       currentMenu = menuId;
-      if (["overview"].includes(menuId)) return renderOverview();
-      if (["incubation", "inc_progress", "inc_ai"].includes(menuId)) return renderIncubation();
-      if (["quality", "quality_standard", "quality_sampling", "quality_report"].includes(menuId)) return renderQuality();
-      if (["live", "live_apply"].includes(menuId)) return renderLive();
-      if (["marketing", "marketing_campaign"].includes(menuId)) return renderMarketing();
-      if (["finance", "finance_fee"].includes(menuId)) return renderFinance();
-      if (["settings", "settings_users"].includes(menuId)) return renderSettings();
-      return renderOverview();
+      const m = MENUS.find(x => x.id === menuId);
+      const l1 = m?.parent || m?.id || "dashboard";
+      currentL1 = l1;
+      if (menuId === "dashboard") return renderDashboard();
+      if (["incubation","inc_apply","inc_progress","inc_assess","inc_diff"].includes(menuId)) return renderIncubation();
+      if (["quality","q_standard","q_sampling","q_trace","q_anti"].includes(menuId)) return renderQuality();
+      if (["facility","f_cold","f_factory","f_device","f_fee"].includes(menuId)) return renderFacility();
+      if (["live","l_spot","l_apply","l_host","l_ai","l_assets"].includes(menuId)) return renderLive();
+      if (["marketing","m_online","m_offline","m_brand","m_route"].includes(menuId)) return renderMarketing();
+      if (["finance","fin_rule","fin_bill","fin_risk","fin_div"].includes(menuId)) return renderFinance();
+      if (["settings","s_user","s_brand","s_notice","s_data","s_log"].includes(menuId)) return renderSettings();
+      return renderDashboard();
     }
 
-    function ensureMenuVisible() {
-      if (!canViewMenu(currentMenu)) {
-        const role = accountRole();
-        const visible = mergedMenuIds(currentAccount, role);
-        currentMenu = visible.includes("overview") ? "overview" : visible[0] || "overview";
-      }
+    function syncHeartbeat() {
+      db.syncStatus.forEach(s => {
+        const fail = Math.random() < 0.03;
+        s.ok = !fail;
+        s.last = nowStr();
+        if (fail) db.warnings.unshift({ id: uid("W"), type: `${s.side}同步异常`, farmId: "ALL", status: "待处理" });
+      });
+      db.warnings = db.warnings.slice(0, 30);
+      save(STORAGE.db, db);
+      renderRightPane();
+    }
+    function setupAutoRefresh() {
+      clearInterval(autoRefreshTimer);
+      const ms = Math.max(1, Number(db.settings.refreshMinutes || 5)) * 60 * 1000;
+      autoRefreshTimer = setInterval(() => {
+        syncHeartbeat();
+        if (currentMenu === "dashboard") renderAll();
+      }, ms);
+    }
+    function globalSearch() {
+      const kw = el.globalSearch.value.trim();
+      if (!kw) return toast("请输入搜索词");
+      const result = [];
+      db.farms.forEach(f => { if (`${f.farmId}${f.farmName}${f.owner}`.includes(kw)) result.push(`农场:${f.farmName}`); });
+      db.sampling.forEach(s => { if (`${s.id}${s.farmId}${s.result}`.includes(kw)) result.push(`抽检:${s.id}`); });
+      db.liveApply.forEach(l => { if (`${l.id}${l.theme}${l.spot}`.includes(kw)) result.push(`直播:${l.id}`); });
+      db.traceCodes.forEach(t => { if (`${t.id}${t.batch}`.includes(kw)) result.push(`溯源:${t.id}`); });
+      el.main.innerHTML = `
+        <div class="card">
+          <div class="card-head"><h3><span class="lamp"></span>全局搜索结果</h3></div>
+          <div class="card-body">
+            <div class="muted">关键词：${kw}</div>
+            <ul>${result.map(r => `<li>${r}</li>`).join("") || `<li>无结果</li>`}</ul>
+          </div>
+        </div>
+      `;
+      currentMenu = "dashboard";
+      renderBreadcrumb();
+      renderMenus();
     }
 
+    function bindGlobalEvents() {
+      el.switchAccount.onclick = () => {
+        const next = accounts.find(a => a.id === el.accountSelect.value);
+        if (!next) return;
+        currentAccount = next;
+        ensureVisibleMenu();
+        log("切换账号", next.username);
+        renderAll();
+      };
+      el.menuL1.onclick = (e) => {
+        const btn = e.target.closest("button[data-menu]");
+        if (!btn) return;
+        const menuId = btn.dataset.menu;
+        const firstChild = visibleL2(menuId)[0]?.id;
+        renderByMenu(firstChild || menuId);
+        renderAllPartial();
+      };
+      el.menuL2.onclick = (e) => {
+        const btn = e.target.closest("button[data-menu]");
+        if (!btn) return;
+        renderByMenu(btn.dataset.menu);
+        renderAllPartial();
+      };
+      el.breadcrumb.onclick = (e) => {
+        const link = e.target.closest("[data-crumb]");
+        if (!link) return;
+        const id = link.dataset.crumb;
+        if (canViewMenu(id)) {
+          const child = visibleL2(id)[0]?.id;
+          renderByMenu(child || id);
+          renderAllPartial();
+        }
+      };
+      el.searchBtn.onclick = globalSearch;
+      el.globalSearch.onkeydown = (e) => { if (e.key === "Enter") globalSearch(); };
+      el.todoBtn.onclick = () => {
+        const first = db.todos.find(t => t.status !== "已完成");
+        if (!first) return toast("无待办");
+        if (canViewMenu(first.menu)) {
+          renderByMenu(first.menu);
+          renderAllPartial();
+        }
+      };
+      el.notifyBtn.onclick = () => toast("消息中心（演示）");
+      el.exportBtn.onclick = () => can("export") ? toast("全局导出任务已创建") : toast("无导出权限");
+      el.refreshBtn.onclick = () => { syncHeartbeat(); renderAll(); toast("数据已刷新"); };
+      el.jumpCockpit.onclick = () => {
+        if (!canViewMenu("dashboard")) return toast("无权限");
+        renderByMenu("dashboard");
+        renderAllPartial();
+      };
+      el.toggleRight.onclick = () => {
+        ui.rightCollapsed = !ui.rightCollapsed;
+        save(STORAGE.ui, ui);
+        renderRightPane();
+      };
+      el.rightExpandHandle.onclick = () => {
+        ui.rightCollapsed = false;
+        save(STORAGE.ui, ui);
+        renderRightPane();
+      };
+      el.main.onclick = (e) => {
+        const done = e.target.closest("[data-act='todo-done']");
+        if (done) {
+          const row = db.todos.find(t => t.id === done.dataset.id);
+          if (row) row.status = "已完成";
+          saveAll();
+          renderAll();
+        }
+        const warn = e.target.closest("[data-act='warn-handle']");
+        if (warn) {
+          const row = db.warnings.find(w => w.id === warn.dataset.id);
+          if (row) row.status = "处理中";
+          saveAll();
+          renderAll();
+        }
+      };
+    }
+    function renderAllPartial() {
+      ensureVisibleMenu();
+      renderMenus();
+      renderBreadcrumb();
+      renderByMenu(currentMenu);
+      renderRightPane();
+      renderIdentity();
+      el.accountSelect.value = currentAccount.id;
+    }
     function renderAll() {
+      ensureVisibleMenu();
+      renderAccountSelect();
       renderIdentity();
       renderMenus();
-      ensureMenuVisible();
+      renderBreadcrumb();
       renderByMenu(currentMenu);
-      renderMenus();
+      renderRightPane();
     }
-
-    el.switchAccount.onclick = () => {
-      const next = accounts.find((a) => a.id === el.accountSelect.value);
-      if (!next) return;
-      currentAccount = next;
-      ensureMenuVisible();
+    function init() {
+      document.documentElement.style.setProperty("--red", db.settings.theme.red || "#D82E2F");
+      document.documentElement.style.setProperty("--green", db.settings.theme.green || "#39B54A");
+      document.documentElement.style.setProperty("--blue", db.settings.theme.blue || "#1E50B3");
+      bindGlobalEvents();
       renderAll();
-    };
-
-    el.menuL1.onclick = (e) => {
-      const btn = e.target.closest("button[data-menu]");
-      if (!btn) return;
-      const menuId = btn.dataset.menu;
-      const child = MENUS.find((m) => m.parent === menuId && canViewMenu(m.id));
-      renderByMenu(child ? child.id : menuId);
-      renderMenus();
-    };
-
-    el.menuL2.onclick = (e) => {
-      const btn = e.target.closest("button[data-menu]");
-      if (!btn) return;
-      renderByMenu(btn.dataset.menu);
-      renderMenus();
-    };
-
-    renderAccountOptions();
-    renderAll();
+      setupAutoRefresh();
+      setInterval(syncHeartbeat, 60000);
+    }
+    init();
   </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
