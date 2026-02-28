@@ -441,13 +441,13 @@
       { id: "l_spot", name: "直播点位/设备管理", parent: "live", module: "live" },
       { id: "l_apply", name: "直播预约审核", parent: "live", module: "live" },
       { id: "l_host", name: "主播孵化管理", parent: "live", module: "live" },
-      { id: "l_ai", name: "AI直播辅助", parent: "live", module: "live" },
+      { id: "l_ai", name: "直播SOP引擎", parent: "live", module: "live" },
       { id: "l_assets", name: "内容素材库", parent: "live", module: "live" },
 
       { id: "m_online", name: "线上引流管理", parent: "marketing", module: "marketing" },
       { id: "m_offline", name: "线下引流管理", parent: "marketing", module: "marketing" },
       { id: "m_brand", name: "区域品牌联动", parent: "marketing", module: "marketing" },
-      { id: "m_route", name: "AI路线配置", parent: "marketing", module: "marketing" },
+      { id: "m_route", name: "客流路线排程", parent: "marketing", module: "marketing" },
 
       { id: "fin_rule", name: "收费标准配置", parent: "finance", module: "finance" },
       { id: "fin_bill", name: "费用核算与收取", parent: "finance", module: "finance" },
@@ -549,7 +549,7 @@
         { farmId: "F003", farmName: "北湖农场", owner: "孙农", status: "需整改", core: false, track: "农家乐型", area: "B-05", visitor: 650, revenue7d: 18100, qcScore: 73 }
       ],
       incubationApply: [
-        { id: "IA001", farmId: "F003", farmName: "北湖农场", owner: "孙农", time: "2026-02-18", status: "待审核", aiPlan: "草莓+研学" }
+        { id: "IA001", farmId: "F003", farmName: "北湖农场", owner: "孙农", time: "2026-02-18", status: "待审核", aiPlan: "评分卡建议：体验型+研学" }
       ],
       incubationProgress: [
         { farmId: "F001", stage: 4, owner: "赵农", due: "2026-03-05", finished: "已完成 4/7", attachmentCount: 3 },
@@ -599,14 +599,20 @@
         { id: "H002", name: "阿华", type: "专业主播", train: "5次", exam: "优秀", cert: "已生成" }
       ],
       scripts: [
-        { id: "SC001", scene: "直播开场", text: "欢迎来到客乡汇花灯农场直播间" }
+        { id: "SC001", scene: "直播开场", text: "欢迎来到客乡汇花灯农场直播间", trigger: "开播前3分钟", target: "提升停留时长>35秒" },
+        { id: "SC002", scene: "产品讲解", text: "三步讲解：产地证据-口感参数-使用场景", trigger: "互动率<9%", target: "互动率提升到10%+" },
+        { id: "SC003", scene: "促单转化", text: "限时权益+库存播报+下单口令", trigger: "订单转化<2.5%", target: "转化率提升0.8pct" },
+        { id: "SC004", scene: "冷场救场", text: "弹幕提问抽奖：发送'灯桃缘'参与福利抽取", trigger: "连续60秒无互动", target: "恢复弹幕频次>20条/分钟" }
       ],
       liveReport: [
         { id: "LR001", room: "L1001", viewers: 11200, interact: "9.6%", orders: 278, advice: "加强前5分钟福利引导" }
       ],
       assets: [
-        { id: "AT001", type: "短视频", farmType: "水果", theme: "花灯文化", scene: "直播", status: "已发布" },
-        { id: "AT002", type: "图片", farmType: "花生", theme: "农事", scene: "海报", status: "待审核" }
+        { id: "AT001", type: "短视频", farmType: "水果", theme: "花灯文化", scene: "直播开场", pack: "开场引流包", link: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4", status: "已发布" },
+        { id: "AT002", type: "图片", farmType: "花生", theme: "农事", scene: "海报", pack: "品牌海报包", link: "https://images.pexels.com/photos/2252584/pexels-photo-2252584.jpeg", status: "待审核" },
+        { id: "AT003", type: "短视频模板", farmType: "果蔬通用", theme: "产地故事", scene: "30秒模板", pack: "短视频模板包", link: "https://www.canva.com/templates/", status: "已发布" },
+        { id: "AT004", type: "文案", farmType: "蜜桃", theme: "促单", scene: "直播尾场", pack: "尾场转化包", link: "https://docs.google.com/document/d/1example-script-template", status: "已发布" },
+        { id: "AT005", type: "图片模板", farmType: "研学", theme: "亲子活动", scene: "活动预热", pack: "研学活动包", link: "https://www.figma.com/community", status: "已发布" }
       ],
       ugc: [
         { id: "UG001", user: "游客A", content: "灯桃缘采摘", likes: 66, status: "待审核" }
@@ -655,9 +661,9 @@
         { id: "T003", text: "处理抽检复检 SP002", priority: "高", status: "待处理", menu: "q_sampling" }
       ],
       aiRecommend: [
-        "建议将 F003 导入体验型赛道，减少与 F001 的同质化竞争",
-        "周末客流高峰建议分流到南岭农场体验工坊",
-        "直播话术建议增加‘花灯文化+农产故事’开场模板"
+        "规则R-101：F003 品控分<75，建议整改后进入重点跟踪清单",
+        "规则R-203：周末客流预测>3000，建议分流至南岭工坊路线",
+        "规则R-305：互动率<9%时，执行开场30秒福利钩子话术"
       ]
     };
 
@@ -677,6 +683,32 @@
     let logs = load(STORAGE.logs, []);
     let drafts = load(STORAGE.drafts, {});
     let ui = load(STORAGE.ui, defaultUi);
+
+    function ensureDemoContent() {
+      if (!Array.isArray(db.scripts)) db.scripts = [];
+      if (!Array.isArray(db.assets)) db.assets = [];
+      db.scripts.forEach((s) => {
+        if (!s.trigger) s.trigger = "手动触发";
+        if (!s.target) s.target = "通用提升";
+      });
+      db.assets.forEach((a) => {
+        if (!("pack" in a)) a.pack = "未分组";
+        if (!("link" in a)) a.link = "";
+      });
+      const appendIfMissing = (arr, row) => {
+        if (arr.some(x => x.id === row.id)) return;
+        arr.push(row);
+      };
+      appendIfMissing(db.scripts, { id: "SC002", scene: "产品讲解", text: "三步讲解：产地证据-口感参数-使用场景", trigger: "互动率<9%", target: "互动率提升到10%+" });
+      appendIfMissing(db.scripts, { id: "SC003", scene: "促单转化", text: "限时权益+库存播报+下单口令", trigger: "订单转化<2.5%", target: "转化率提升0.8pct" });
+      appendIfMissing(db.scripts, { id: "SC004", scene: "冷场救场", text: "弹幕提问抽奖：发送'灯桃缘'参与福利抽取", trigger: "连续60秒无互动", target: "恢复弹幕频次>20条/分钟" });
+
+      appendIfMissing(db.assets, { id: "AT003", type: "短视频模板", farmType: "果蔬通用", theme: "产地故事", scene: "30秒模板", pack: "短视频模板包", link: "https://www.canva.com/templates/", status: "已发布" });
+      appendIfMissing(db.assets, { id: "AT004", type: "文案", farmType: "蜜桃", theme: "促单", scene: "直播尾场", pack: "尾场转化包", link: "https://docs.google.com/document/d/1example-script-template", status: "已发布" });
+      appendIfMissing(db.assets, { id: "AT005", type: "图片模板", farmType: "研学", theme: "亲子活动", scene: "活动预热", pack: "研学活动包", link: "https://www.figma.com/community", status: "已发布" });
+    }
+    ensureDemoContent();
+    save(STORAGE.db, db);
 
     let currentAccount = accounts[0];
     let currentMenu = "dashboard";
@@ -924,8 +956,9 @@
         const riskScore = Math.max(5, Math.min(95, 100 - f.qcScore + Math.round((1000 - Math.min(f.visitor, 1000)) / 50)));
         const level = riskScore > 70 ? "高" : riskScore > 40 ? "中" : "低";
         const action = riskScore > 70 ? "立即整改+流量扶持" : riskScore > 40 ? "重点跟踪+抽检加密" : "保持节奏";
+        const ruleId = riskScore > 70 ? "R-101" : riskScore > 40 ? "R-102" : "R-103";
         const cls = level === "高" ? "warn" : level === "中" ? "" : "ok";
-        return `<tr><td>${f.farmName}</td><td><span class="tag ${cls}">${level}</span></td><td>${riskScore}%</td><td>${action}</td></tr>`;
+        return `<tr><td>${f.farmName}</td><td><span class="tag ${cls}">${level}</span></td><td>${riskScore}分</td><td>${action}</td><td>${ruleId}</td></tr>`;
       }).join("");
 
       el.main.innerHTML = `
@@ -966,12 +999,12 @@
           </div>
 
           <div class="card">
-            <div class="card-head"><h3><span class="lamp"></span>AI智能推荐与风险指导</h3></div>
+            <div class="card-head"><h3><span class="lamp"></span>经营风险规则引擎</h3></div>
             <div class="card-body">
-              <div class="ops" style="margin-bottom:8px;">${actionBtn("AI一键生成", "audit", "primary", `id="aiGenBtn"`)}${actionBtn("应用到待办", "audit", "ok", `id="aiApplyBtn"`)}${actionBtn("生成风险预警", "audit", "", `id="aiRiskBtn"`)}</div>
+              <div class="ops" style="margin-bottom:8px;">${actionBtn("执行规则计算", "audit", "primary", `id="aiGenBtn"`)}${actionBtn("生成处置单", "audit", "ok", `id="aiApplyBtn"`)}${actionBtn("触发风险预警", "audit", "", `id="aiRiskBtn"`)}</div>
               <ul style="margin:0;padding-left:18px;">${db.aiRecommend.map(x => `<li>${x}</li>`).join("")}</ul>
               <div class="table-wrap" style="margin-top:8px;">
-                <table><thead><tr><th>农场</th><th>风险级别</th><th>AI置信度</th><th>建议动作</th></tr></thead><tbody>${aiGuideRows}</tbody></table>
+                <table><thead><tr><th>农场</th><th>风险级别</th><th>风险评分</th><th>建议动作</th><th>触发规则</th></tr></thead><tbody>${aiGuideRows}</tbody></table>
               </div>
             </div>
           </div>
@@ -1014,32 +1047,37 @@
 
       const aiGenBtn = document.getElementById("aiGenBtn");
       if (aiGenBtn) aiGenBtn.onclick = () => {
-        db.aiRecommend.unshift(`AI策略 ${nowStr().slice(11,16)}：优先扶持${farms[0]?.farmName || "核心农场"}直播转化`);
+        const target = [...farms].sort((a, b) => a.qcScore - b.qcScore)[0];
+        const now = nowStr().slice(11,16);
+        const txt = target
+          ? `规则R-101 ${now}：${target.farmId} 品控${target.qcScore}分，纳入重点整改并加密抽检`
+          : `规则R-000 ${now}：无可计算农场数据`;
+        db.aiRecommend.unshift(txt);
         db.aiRecommend = db.aiRecommend.slice(0, 6);
         saveAll();
-        log("AI一键生成建议", "dashboard");
+        log("执行规则计算", "dashboard");
         renderAll();
       };
 
       const aiApplyBtn = document.getElementById("aiApplyBtn");
       if (aiApplyBtn) aiApplyBtn.onclick = () => {
-        const txt = db.aiRecommend[0] || "AI建议";
-        db.todos.unshift({ id: uid("T"), text: `执行：${txt}`, priority: "中", status: "待处理", menu: "dashboard" });
+        const txt = db.aiRecommend[0] || "规则建议";
+        db.todos.unshift({ id: uid("T"), text: `处置单：${txt}`, priority: "中", status: "待处理", menu: "dashboard" });
         saveAll();
-        log("AI建议应用到待办", txt);
-        toast("AI建议已加入待办");
+        log("生成规则处置单", txt);
+        toast("处置单已加入待办");
         renderRightPane();
       };
 
       const aiRiskBtn = document.getElementById("aiRiskBtn");
       if (aiRiskBtn) aiRiskBtn.onclick = () => {
-        const target = farms.sort((a,b)=>a.qcScore-b.qcScore)[0];
+        const target = [...farms].sort((a, b) => a.qcScore - b.qcScore)[0];
         if (!target) return;
-        db.warnings.unshift({ id: uid("W"), type: "AI预警：品控波动", farmId: target.farmId, status: "待处理" });
+        db.warnings.unshift({ id: uid("W"), type: "规则预警：R-101 品控下探", farmId: target.farmId, status: "待处理" });
         db.warnings = db.warnings.slice(0, 40);
         saveAll();
-        log("AI生成风险预警", target.farmId);
-        toast(`已生成 ${target.farmName} 风险预警`);
+        log("触发规则风险预警", target.farmId);
+        toast(`已触发 ${target.farmName} 规则预警`);
         renderAll();
       };
     }
@@ -1057,7 +1095,7 @@ function filteredByFarm(rows, module, key = "farmId") { return rows.filter(r => 
             <div class="card-head between">
               <h3><span class="lamp"></span>入驻申请管理</h3>
               <div class="ops">
-                ${actionBtn("AI初筛", "audit", "", `id="aiScreen"`)}
+                ${actionBtn("准入评分卡初筛", "audit", "", `id="aiScreen"`)}
                 ${actionBtn("批量通过", "audit", "ok", `id="batchApproveApply"`)}
                 ${actionBtn("批量驳回", "audit", "danger", `id="batchRejectApply"`)}
               </div>
@@ -1163,8 +1201,18 @@ function filteredByFarm(rows, module, key = "farmId") { return rows.filter(r => 
       if (btnReject) btnReject.onclick = () => batchOp("已驳回");
       const aiScreen = document.getElementById("aiScreen");
       if (aiScreen) aiScreen.onclick = () => {
-        db.incubationApply.forEach(a => { if (a.status === "待审核") a.aiPlan = "AI推荐：体验型+直播导流"; });
-        saveAll(); log("AI初筛", "incubation apply"); toast("AI初筛完成"); renderAll();
+        db.incubationApply.forEach(a => {
+          if (a.status !== "待审核") return;
+          const farm = db.farms.find(f => f.farmId === a.farmId);
+          const qc = farm?.qcScore || 70;
+          const visitor = farm?.visitor || 600;
+          const revenue = farm?.revenue7d || 15000;
+          const score = Math.round(qc * 0.45 + Math.min(100, visitor / 12) * 0.2 + Math.min(100, revenue / 300) * 0.35);
+          a.aiPlan = score >= 75
+            ? `评分卡${score}分：建议通过，路线=体验型+研学`
+            : `评分卡${score}分：建议补材料后复核，规则=SC-RECHECK`;
+        });
+        saveAll(); log("准入评分卡初筛", "incubation apply"); toast("评分卡初筛完成"); renderAll();
       };
       document.querySelectorAll("[data-act='apply-review']").forEach(btn => btn.onclick = () => {
         const id = btn.dataset.id;
@@ -1481,26 +1529,40 @@ function filteredByFarm(rows, module, key = "farmId") { return rows.filter(r => 
             <div class="card-body"><table><thead><tr><th>ID</th><th>姓名</th><th>类型</th><th>培训</th><th>考核</th><th>证书</th><th>操作</th></tr></thead><tbody>${hostRows.map(h => `<tr><td>${h.id}</td><td>${h.name}</td><td>${h.type}</td><td>${h.train}</td><td>${h.exam}</td><td>${h.cert}</td><td>${actionBtn("生成证书", "audit", "ok", `data-act="cert" data-id="${h.id}"`)}</td></tr>`).join("")}</tbody></table></div>
           </div>
           <div class="card table-wrap">
-            <div class="card-head"><h3><span class="lamp"></span>AI直播辅助与复盘</h3></div>
+            <div class="card-head"><h3><span class="lamp"></span>直播运营SOP引擎与复盘</h3></div>
             <div class="card-body">
-              <div class="row" style="margin-bottom:8px;"><input id="scriptScene" placeholder="场景(如开场/转场/促单)" /><input id="scriptText" placeholder="话术模板" />${actionBtn("新增话术", "edit", "", `id="addScript"`)}</div>
-              <table><thead><tr><th>ID</th><th>场景</th><th>话术</th></tr></thead><tbody>${db.scripts.map(s => `<tr><td>${s.id}</td><td>${s.scene}</td><td>${s.text}</td></tr>`).join("")}</tbody></table>
+              <div class="row wrap" style="margin-bottom:8px;">
+                <input id="scriptScene" placeholder="场景(如开场/转场/促单)" />
+                <input id="scriptTrigger" placeholder="触发条件(如互动率<9%)" />
+                <input id="scriptTarget" placeholder="目标(如转化+0.8pct)" />
+                <input id="scriptText" placeholder="话术模板" />
+                ${actionBtn("新增话术", "edit", "", `id="addScript"`)}
+              </div>
+              <table><thead><tr><th>ID</th><th>场景</th><th>触发条件</th><th>目标</th><th>话术</th></tr></thead><tbody>${db.scripts.map(s => `<tr><td>${s.id}</td><td>${s.scene}</td><td>${s.trigger || "-"}</td><td>${s.target || "-"}</td><td>${s.text}</td></tr>`).join("")}</tbody></table>
               <div style="margin-top:8px;"></div>
               <table><thead><tr><th>房间</th><th>观看</th><th>互动率</th><th>订单</th><th>建议</th></tr></thead><tbody>${reportRows.map(r => `<tr><td>${r.room}</td><td>${r.viewers}</td><td>${r.interact}</td><td>${r.orders}</td><td>${r.advice}</td></tr>`).join("")}</tbody></table>
               <div class="grid g2" style="margin-top:8px;">
-                <div class="kpi"><div class="muted">AI转化预测</div><div class="v">${Math.min(98, 45 + reportRows.length * 7)}%</div></div>
-                <div class="kpi"><div class="muted">AI风险提示</div><div class="v" style="font-size:18px;">弹幕响应延时偏高</div></div>
+                <div class="kpi"><div class="muted">SOP转化达成率</div><div class="v">${Math.min(98, 45 + reportRows.length * 7)}%</div></div>
+                <div class="kpi"><div class="muted">规则风险提示</div><div class="v" style="font-size:18px;">弹幕响应延时偏高</div></div>
               </div>
-              <div class="panel-note" style="margin-top:8px;">AI话术会基于直播间问答与商品问题实时推送高转化建议（当前为演示策略）。</div>
-              <div class="ops" style="margin-top:8px;">${actionBtn("实时AI诊断", "audit", "", `id="aiDiagLive"`)}${actionBtn("生成AI话术包", "audit", "ok", `id="aiPackLive"`)}${actionBtn("推送优化建议", "audit", "", `id="aiPushLive"`)}${actionBtn("生成健康度报告", "audit", "primary", `id="genLiveReport"`)}</div>
+              <div class="panel-note" style="margin-top:8px;">按阈值规则触发SOP动作：互动率、订单转化、观看峰值均可追溯。</div>
+              <div class="ops" style="margin-top:8px;">${actionBtn("执行SOP诊断", "audit", "", `id="aiDiagLive"`)}${actionBtn("生成场景话术包", "audit", "ok", `id="aiPackLive"`)}${actionBtn("推送处置建议", "audit", "", `id="aiPushLive"`)}${actionBtn("生成健康度报告", "audit", "primary", `id="genLiveReport"`)}</div>
             </div>
           </div>
         </div>
         <div class="card table-wrap">
-          <div class="card-head between"><h3><span class="lamp"></span>内容素材库</h3><div class="row"><input id="assetKeyword" placeholder="关键词搜索" style="width:180px;" />${actionBtn("搜索", "view", "", `id="searchAsset"`)}${actionBtn("批量下载", "export", "", `id="batchDownloadAsset"`)}</div></div>
+          <div class="card-head between"><h3><span class="lamp"></span>内容素材库（含素材包）</h3><div class="row"><input id="assetKeyword" placeholder="关键词搜索" style="width:180px;" />${actionBtn("搜索", "view", "", `id="searchAsset"`)}${actionBtn("批量下载", "export", "", `id="batchDownloadAsset"`)}</div></div>
           <div class="card-body">
-            <table><thead><tr><th><input type="checkbox" id="allAsset"></th><th>ID</th><th>类型</th><th>农产</th><th>主题</th><th>场景</th><th>状态</th></tr></thead><tbody id="assetBody">${db.assets.map(a => `<tr><td><input type="checkbox" class="assetCheck" value="${a.id}"></td><td>${a.id}</td><td>${a.type}</td><td>${a.farmType}</td><td>${a.theme}</td><td>${a.scene}</td><td>${a.status}</td></tr>`).join("")}</tbody></table>
-            <div class="row" style="margin-top:8px;"><select id="assetType"><option>短视频</option><option>图片</option><option>文案</option></select><input id="assetFarmType" placeholder="农产类型" /><input id="assetTheme" placeholder="文化主题" /><input id="assetScene" placeholder="使用场景" />${actionBtn("上传素材", "submit", "primary", `id="uploadAsset"`)}</div>
+            <table><thead><tr><th><input type="checkbox" id="allAsset"></th><th>ID</th><th>类型</th><th>农产</th><th>主题</th><th>场景</th><th>素材包</th><th>链接</th><th>状态</th></tr></thead><tbody id="assetBody">${db.assets.map(a => `<tr><td><input type="checkbox" class="assetCheck" value="${a.id}"></td><td>${a.id}</td><td>${a.type}</td><td>${a.farmType}</td><td>${a.theme}</td><td>${a.scene}</td><td>${a.pack || "-"}</td><td>${a.link ? `<a href="${a.link}" target="_blank" rel="noopener">查看</a>` : "-"}</td><td>${a.status}</td></tr>`).join("")}</tbody></table>
+            <div class="row wrap" style="margin-top:8px;">
+              <select id="assetType"><option>短视频</option><option>图片</option><option>文案</option><option>短视频模板</option><option>图片模板</option></select>
+              <input id="assetFarmType" placeholder="农产类型" />
+              <input id="assetTheme" placeholder="文化主题" />
+              <input id="assetScene" placeholder="使用场景" />
+              <input id="assetPack" placeholder="素材包名称(如 开场引流包)" />
+              <input id="assetLink" placeholder="素材链接(https://...)" />
+              ${actionBtn("上传素材", "submit", "primary", `id="uploadAsset"`)}
+            </div>
           </div>
         </div>
       `;
@@ -1537,50 +1599,55 @@ function filteredByFarm(rows, module, key = "farmId") { return rows.filter(r => 
       const addScript = document.getElementById("addScript");
       if (addScript) addScript.onclick = () => {
         const scene = document.getElementById("scriptScene").value.trim();
+        const trigger = document.getElementById("scriptTrigger").value.trim();
+        const target = document.getElementById("scriptTarget").value.trim();
         const text = document.getElementById("scriptText").value.trim();
         if (!scene || !text) return toast("请输入场景与话术");
-        db.scripts.unshift({ id: uid("SC"), scene, text });
+        db.scripts.unshift({ id: uid("SC"), scene, trigger: trigger || "手动触发", target: target || "通用提升", text });
         saveAll(); log("新增话术", scene); renderAll();
       };
       const gen = document.getElementById("genLiveReport");
       if (gen) gen.onclick = () => {
-        db.liveReport.unshift({ id: uid("LR"), room: `L${Date.now()%10000}`, viewers: 6000 + Math.round(Math.random()*6000), interact: (6 + Math.random()*6).toFixed(1)+"%", orders: 90 + Math.round(Math.random()*260), advice: "建议优化前10分钟互动节奏" });
-        saveAll(); log("生成直播复盘", "AI"); renderAll();
+        db.liveReport.unshift({ id: uid("LR"), room: `L${Date.now()%10000}`, viewers: 6000 + Math.round(Math.random()*6000), interact: (6 + Math.random()*6).toFixed(1)+"%", orders: 90 + Math.round(Math.random()*260), advice: "规则R-LIVE-01：前10分钟互动节奏需补强" });
+        saveAll(); log("生成直播复盘", "SOP"); renderAll();
       };
       const aiDiagLive = document.getElementById("aiDiagLive");
       if (aiDiagLive) aiDiagLive.onclick = () => {
         const row = db.liveReport[0];
         if (!row) return toast("暂无复盘数据");
-        row.advice = `AI诊断：${row.interact}互动偏低，建议增加口播停顿与弹幕复述`;
+        const interact = Number(String(row.interact).replace("%", "")) || 0;
+        row.advice = interact < 9
+          ? `规则R-LIVE-02：互动率${row.interact}偏低，执行“提问-复述-福利钩子”SOP`
+          : `规则R-LIVE-03：互动率${row.interact}正常，执行稳态节奏SOP`;
         saveAll();
-        log("AI实时诊断", row.room);
-        toast("AI诊断已更新到复盘建议");
+        log("执行SOP诊断", row.room);
+        toast("SOP诊断结果已更新");
         renderAll();
       };
 
       const aiPackLive = document.getElementById("aiPackLive");
       if (aiPackLive) aiPackLive.onclick = () => {
         const pack = [
-          { scene: "开场30秒", text: "欢迎来到客乡汇，今天带你看花灯农场爆款" },
-          { scene: "产品讲解", text: "先看果型，再看糖度，最后讲产地故事" },
-          { scene: "促单转化", text: "现在下单送DIY体验券，库存实时递减" }
+          { scene: "开场30秒", trigger: "开播前3分钟", target: "停留时长>35秒", text: "SOP-OPEN：福利钩子+产地亮点+本场目标" },
+          { scene: "产品讲解", trigger: "互动率<9%", target: "互动率提升到10%+", text: "SOP-PROD：参数证据->使用场景->价格锚点" },
+          { scene: "促单转化", trigger: "转化率<2.5%", target: "转化率提升0.8pct", text: "SOP-ORDER：限时权益->库存播报->下单引导" }
         ];
-        pack.reverse().forEach(x => db.scripts.unshift({ id: uid("SC"), scene: x.scene, text: x.text }));
+        pack.reverse().forEach(x => db.scripts.unshift({ id: uid("SC"), scene: x.scene, trigger: x.trigger, target: x.target, text: x.text }));
         saveAll();
-        log("生成AI话术包", "3条");
-        toast("已生成AI话术包");
+        log("生成场景话术包", "3条");
+        toast("已生成SOP话术包");
         renderAll();
       };
 
       const aiPushLive = document.getElementById("aiPushLive");
       if (aiPushLive) aiPushLive.onclick = () => {
         const row = db.liveReport[0];
-        const txt = row ? `直播间${row.room}优化：前5分钟加福利钩子` : "直播优化建议";
-        db.warnings.unshift({ id: uid("W"), type: "AI直播优化提醒", farmId: "ALL", status: "待处理" });
+        const txt = row ? `直播间${row.room}处置：执行R-LIVE-04前5分钟福利钩子` : "直播SOP处置建议";
+        db.warnings.unshift({ id: uid("W"), type: "规则预警：直播转化波动", farmId: "ALL", status: "待处理" });
         db.todos.unshift({ id: uid("T"), text: txt, priority: "中", status: "待处理", menu: "l_ai" });
         saveAll();
-        log("推送直播优化建议", txt);
-        toast("优化建议已推送到待办");
+        log("推送直播处置建议", txt);
+        toast("处置建议已推送到待办");
         renderRightPane();
       };
       const allAsset = document.getElementById("allAsset");
@@ -1591,16 +1658,18 @@ function filteredByFarm(rows, module, key = "farmId") { return rows.filter(r => 
         const farmType = document.getElementById("assetFarmType").value.trim();
         const theme = document.getElementById("assetTheme").value.trim();
         const scene = document.getElementById("assetScene").value.trim();
+        const pack = document.getElementById("assetPack").value.trim();
+        const link = document.getElementById("assetLink").value.trim();
         if (!farmType || !theme || !scene) return toast("请完整填写素材信息");
-        db.assets.unshift({ id: uid("AT"), type, farmType, theme, scene, status: "待审核" });
+        db.assets.unshift({ id: uid("AT"), type, farmType, theme, scene, pack: pack || "未分组", link, status: "待审核" });
         saveAll(); log("上传素材", type); renderAll();
       };
       const search = document.getElementById("searchAsset");
       if (search) search.onclick = () => {
         const kw = document.getElementById("assetKeyword").value.trim();
-        const rows = db.assets.filter(a => `${a.id}${a.type}${a.farmType}${a.theme}${a.scene}`.includes(kw));
+        const rows = db.assets.filter(a => `${a.id}${a.type}${a.farmType}${a.theme}${a.scene}${a.pack || ""}${a.link || ""}`.includes(kw));
         const body = document.getElementById("assetBody");
-        body.innerHTML = rows.map(a => `<tr><td><input type="checkbox" class="assetCheck" value="${a.id}"></td><td>${a.id}</td><td>${a.type}</td><td>${a.farmType}</td><td>${a.theme}</td><td>${a.scene}</td><td>${a.status}</td></tr>`).join("") || `<tr><td colspan="7" class="muted">无结果</td></tr>`;
+        body.innerHTML = rows.map(a => `<tr><td><input type="checkbox" class="assetCheck" value="${a.id}"></td><td>${a.id}</td><td>${a.type}</td><td>${a.farmType}</td><td>${a.theme}</td><td>${a.scene}</td><td>${a.pack || "-"}</td><td>${a.link ? `<a href="${a.link}" target="_blank" rel="noopener">查看</a>` : "-"}</td><td>${a.status}</td></tr>`).join("") || `<tr><td colspan="9" class="muted">无结果</td></tr>`;
       };
       const dl = document.getElementById("batchDownloadAsset");
       if (dl) dl.onclick = () => {
@@ -1630,11 +1699,11 @@ function filteredByFarm(rows, module, key = "farmId") { return rows.filter(r => 
             <div class="card-body"><table><thead><tr><th>ID</th><th>品牌</th><th>产品</th><th>状态</th><th>销量</th><th>操作</th></tr></thead><tbody>${db.brandLink.map(b => `<tr><td>${b.id}</td><td>${b.brand}</td><td>${b.product}</td><td>${b.status}</td><td>${b.sales}</td><td>${actionBtn("上架审核", "audit", "", `data-act="brand-audit" data-id="${b.id}"`)}</td></tr>`).join("")}</tbody></table></div>
           </div>
           <div class="card table-wrap">
-            <div class="card-head"><h3><span class="lamp"></span>AI路线配置</h3></div>
+            <div class="card-head"><h3><span class="lamp"></span>客流分流与路线排程</h3></div>
             <div class="card-body">
               <table><thead><tr><th>ID</th><th>客群</th><th>时长</th><th>兴趣</th><th>路线</th></tr></thead><tbody>${db.routes.map(r => `<tr><td>${r.id}</td><td>${r.crowd}</td><td>${r.duration}</td><td>${r.interest}</td><td>${r.path}</td></tr>`).join("")}</tbody></table>
-              <div class="row" style="margin-top:8px;"><select id="routeCrowd"><option>亲子</option><option>情侣</option><option>团建</option><option>研学</option></select><input id="routeDuration" placeholder="时长" /><input id="routeInterest" placeholder="兴趣偏好" /><input id="routePath" placeholder="路线节点" />${actionBtn("新增路线模板", "config", "primary", `id="addRoute"`)}</div>
-              <div class="panel-note" style="margin-top:8px;">路线模板会联动客流分流建议（演示逻辑）。</div>
+              <div class="row" style="margin-top:8px;"><select id="routeCrowd"><option>亲子</option><option>情侣</option><option>团建</option><option>研学</option></select><input id="routeDuration" placeholder="时长" /><input id="routeInterest" placeholder="兴趣偏好" /><input id="routePath" placeholder="路线节点" />${actionBtn("新增排程模板", "config", "primary", `id="addRoute"`)}</div>
+              <div class="panel-note" style="margin-top:8px;">规则R-ROUTE按客群和时段承载量生成分流比例与执行路径。</div>
             </div>
           </div>
         </div>
@@ -1672,7 +1741,7 @@ function filteredByFarm(rows, module, key = "farmId") { return rows.filter(r => 
         const path = document.getElementById("routePath").value.trim();
         if (!duration || !interest || !path) return toast("请完整填写路线模板");
         db.routes.unshift({ id: uid("RT"), crowd, duration, interest, path });
-        saveAll(); log("新增AI路线", crowd); renderAll();
+        saveAll(); log("新增路线排程模板", crowd); renderAll();
       };
     }
 
